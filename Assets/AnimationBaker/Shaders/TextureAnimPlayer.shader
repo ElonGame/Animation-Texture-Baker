@@ -1,48 +1,45 @@
 ﻿Shader "Unlit/TextureAnimPlayer"
 {
-	Properties
-	{
+    Properties
+    {
 		_MainTex ("Texture", 2D) = "white" {}
+		_Color ("Color", Color) = (1,1,1,1)
 		_PosTex("position texture", 2D) = "black"{}
 		_NmlTex("normal texture", 2D) = "white"{}
 		_DT ("delta time", float) = 0
 		_Length ("animation length", Float) = 1
 		[Toggle(ANIM_LOOP)] _Loop("loop", Float) = 0
-	}
-	SubShader
-	{
-		Tags { "RenderType"="Opaque" }
-		LOD 100 Cull Off
+    }
 
-		Pass
-		{
-			CGPROGRAM
-			#pragma vertex vert
-			#pragma fragment frag
+    SubShader
+    {
+        Pass
+        {
+            Tags {"LightMode"="ForwardBase"}
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            #include "UnityCG.cginc"
+            #include "Lighting.cginc"
+            #include "AutoLight.cginc"
 			#pragma multi_compile ___ ANIM_LOOP
-
-			#include "UnityCG.cginc"
-
 			#define ts _PosTex_TexelSize
-
-			struct appdata
-			{
-				float2 uv : TEXCOORD0;
-			};
-
-			struct v2f
-			{
-				float2 uv : TEXCOORD0;
-				float3 normal : TEXCOORD1;
-				float4 vertex : SV_POSITION;
-			};
-
-			sampler2D _MainTex, _PosTex, _NmlTex;
-			float4 _PosTex_TexelSize;
-			float _Length, _DT;
 			
-			v2f vert (appdata v, uint vid : SV_VertexID)
-			{
+            struct v2f
+            {
+                float2 uv : TEXCOORD0;
+                SHADOW_COORDS(1) // put shadows data into TEXCOORD1
+                float3 normal : TEXCOORD2;
+                fixed3 diff : COLOR0;
+                fixed3 ambient : COLOR1;
+                float4 pos : SV_POSITION;
+            };
+			sampler2D _MainTex, _PosTex, _NmlTex;
+			float4 _PosTex_TexelSize, _Color;
+			float _Length, _DT;
+            v2f vert (appdata_base v, uint vid : SV_VertexID)
+            {
+				
 				float t = (_Time.y - _DT) / _Length;
 #if ANIM_LOOP
 				t = fmod(t, 1.0);
@@ -53,21 +50,78 @@
 				float y = t;
 				float4 pos = tex2Dlod(_PosTex, float4(x, y, 0, 0));
 				float3 normal = tex2Dlod(_NmlTex, float4(x, y, 0, 0));
+                v2f o;
+                v.vertex = o.pos = UnityObjectToClipPos(pos);
+                v.normal = o.normal = UnityObjectToWorldNormal(normal);
+                o.uv = v.texcoord;
+                half nl = max(0, dot(o.normal, _WorldSpaceLightPos0.xyz));
+                o.diff = nl * _LightColor0.rgb;
+                o.ambient = ShadeSH9(half4(o.normal,1));
+                TRANSFER_SHADOW(o)
+                return o;
+            }
+            fixed4 frag (v2f i) : SV_Target
+            {
+                fixed4 col = tex2D(_MainTex, i.uv) * _Color * 1.5;
+                fixed shadow = SHADOW_ATTENUATION(i);
+                fixed3 lighting = i.diff * shadow + i.ambient;
+                col.rgb *= lighting;
+                return col;
+            }
+            ENDCG
+        }
+		
+		// Pass to render object as a shadow caster
+		Pass {
+			Name "ShadowCaster"
+			Tags { "LightMode" = "ShadowCaster" }
 
-				v2f o;
-				o.vertex = UnityObjectToClipPos(pos);
-				o.normal = UnityObjectToWorldNormal(normal);
-				o.uv = v.uv;
-				return o;
-			}
-			
-			half4 frag (v2f i) : SV_Target
-			{
-				half diff = dot(i.normal, float3(0,1,0))*0.5 + 0.5;
-				half4 col = tex2D(_MainTex, i.uv);
-				return diff * col;
-			}
-			ENDCG
+				CGPROGRAM
+				#pragma vertex vert
+				#pragma fragment frag
+				#pragma target 2.0
+				#pragma multi_compile_shadowcaster
+				#pragma multi_compile_instancing // allow instanced shadow pass for most of the shaders
+				#include "UnityCG.cginc"
+				#pragma multi_compile ___ ANIM_LOOP
+				#define ts _PosTex_TexelSize
+
+				struct v2f {
+					V2F_SHADOW_CASTER;
+					UNITY_VERTEX_OUTPUT_STEREO
+				};
+
+				sampler2D _MainTex, _PosTex, _NmlTex;
+				float4 _PosTex_TexelSize, _Color;
+				float _Length, _DT;
+
+				v2f vert( appdata_base v, uint vid : SV_VertexID)
+				{
+					float t = (_Time.y - _DT) / _Length;
+#if ANIM_LOOP
+					t = fmod(t, 1.0);
+#else
+					t = saturate(t);
+#endif
+					float x = (vid + 0.5) * ts.x;
+					float y = t;
+					float4 pos = tex2Dlod(_PosTex, float4(x, y, 0, 0));
+					float3 normal = tex2Dlod(_NmlTex, float4(x, y, 0, 0));
+					v.vertex = pos;
+					v.normal = UnityObjectToWorldNormal(normal);
+					v2f o;
+					UNITY_SETUP_INSTANCE_ID(v);
+					UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
+					TRANSFER_SHADOW_CASTER_NORMALOFFSET(o)
+					return o;
+				}
+
+				float4 frag( v2f i ) : SV_Target
+				{
+					SHADOW_CASTER_FRAGMENT(i)
+				}
+				ENDCG
+
 		}
-	}
+    }
 }
