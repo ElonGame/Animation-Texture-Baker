@@ -7,10 +7,9 @@
 		_PosTex("Position Texture", 2D) = "black"{}
 		_NmlTex("Normal Texture", 2D) = "white"{}
 		_DT ("Start Offset", float) = 0
+		_DT_End ("End Offset", Float) = 0
 		_Length ("Duration", Float) = 1
 		[Toggle(_Loop)] _Loop("Loop", Float) = 0
-		[Toggle(_HasEnded)] _HasEnded("Has Ended", Float) = 0
-		_DT_End ("End Timestamp", Float) = 0
     }
 
     SubShader
@@ -99,11 +98,11 @@
 
 				sampler2D _MainTex, _PosTex, _NmlTex;
 				float4 _PosTex_TexelSize, _Color;
-				float _Length, _DT, _HasEnded, _DT_End, _Loop, RunTime;
+				float _Length, _DT, _HasEnded, _DT_End, _Loop;
 
 				v2f vert( appdata_base v, uint vid : SV_VertexID)
 				{
-					float t = (RunTime - _DT) / _Length;
+					float t = (_Time.y - _DT) / _Length;
 					if(_Loop) {
 						t = fmod(t, 1.0);
 					} else {
