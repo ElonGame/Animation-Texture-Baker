@@ -231,11 +231,8 @@ namespace AnimationBaker
             foreach (AnimationClip clip in AnimationUtility.GetAnimationClips (instance))
             {
                 var clipIndex = clips.IndexOf (clip);
-                Debug.Log (clip.name);
                 if (clipIndex == -1) continue;
-                Debug.Log (1);
                 if (clipsImport[clipIndex] == false) continue;
-                Debug.Log (2);
 
                 var fileName = Utils.CreateFileName (clip.name);
                 var statePath = Utils.Combine (prefabPath, fileName);
