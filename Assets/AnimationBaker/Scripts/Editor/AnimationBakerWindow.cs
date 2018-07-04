@@ -13,6 +13,8 @@ namespace AnimationBaker
         public ComputeShader infoTexGen;
         public Shader playShader;
 
+        const float animationFps = 30;
+
         GameObject chosen;
         Transform chosenTransform;
         GameObject lastChosen;
@@ -165,7 +167,7 @@ namespace AnimationBaker
                 EditorGUILayout.HelpBox ("✔ Mesh scale will be adjusted to world space", MessageType.None);
             }
 
-            EditorGUILayout.LabelField ("Bake (" + bakeClipsCount + ") Animations: ");
+            EditorGUILayout.LabelField ("Bake (" + bakeClipsCount + ") Animations: Default " + idleAnimation?.name);
 
             for (int i = 0; i < totalClips; i++)
             {
@@ -175,7 +177,7 @@ namespace AnimationBaker
                 {
                     GUI.enabled = false;
                 }
-                // if (GUILayout.Button ("↑", EditorStyles.miniButton)) MoveClip (i, i - 1);
+                if (GUILayout.Button ("↑", EditorStyles.miniButton)) MoveClip (i, i - 1);
                 if (i == 0)
                 {
                     GUI.enabled = true;
@@ -184,7 +186,7 @@ namespace AnimationBaker
                 {
                     GUI.enabled = false;
                 }
-                // if (GUILayout.Button ("↓", EditorStyles.miniButton)) MoveClip (i, i + 1);
+                if (GUILayout.Button ("↓", EditorStyles.miniButton)) MoveClip (i, i + 1);
                 if (i == totalClips - 1)
                 {
                     GUI.enabled = true;
@@ -210,6 +212,7 @@ namespace AnimationBaker
             {
                 playShader = (Shader) Resources.Load ("BakedAnimPlayer", typeof (Shader));
             }
+            var setDt = 1f / animationFps;
             var instance = Instantiate (chosen, Vector3.zero, Quaternion.identity);
             var skinRenderer = FindSkinnedMeshRenderer (instance.transform);
             var newAnimation = FindAnimation (instance.transform);
@@ -221,6 +224,7 @@ namespace AnimationBaker
             var texWidth = Mathf.NextPowerOfTwo (verticesCount);
             var prefabPath = Utils.Combine (outputPath, chosen.name);
             var prefabDir = Utils.Combine (outputDir, chosen.name);
+            // Debug.Log (newMesh.bounds.size);
             if (!Directory.Exists (prefabDir))
                 Directory.CreateDirectory (prefabDir);
             AssetDatabase.Refresh ();
@@ -228,29 +232,50 @@ namespace AnimationBaker
             // Save mesh
             AssetDatabase.CreateAsset (newMesh, prefabPath + "/" + chosen.name + "Mesh.asset");
             var animMesh = new Mesh ();
-            foreach (AnimationClip clip in AnimationUtility.GetAnimationClips (instance))
+
+            var scale = Vector3.one;
+            scale.x = 1 / rootBone.localScale.x;
+            scale.y = 1 / rootBone.localScale.y;
+            scale.z = 1 / rootBone.localScale.z;
+
+            var animationFrameCount = 0;
+            var totalClips = 0;
+            for (int i = 0; i < clipsImport.Count; i++)
             {
-                var clipIndex = clips.IndexOf (clip);
-                if (clipIndex == -1) continue;
-                if (clipsImport[clipIndex] == false) continue;
+                if (clipsImport[i] == false) continue;
+                var clip = clips[i];
+                var frames = Mathf.NextPowerOfTwo ((int) (clip.length / setDt));
+                if (frames > animationFrameCount)
+                {
+                    animationFrameCount = frames;
+                }
+                totalClips++;
+            }
 
-                var fileName = Utils.CreateFileName (clip.name);
-                var statePath = Utils.Combine (prefabPath, fileName);
-                var stateDir = Utils.Combine (prefabDir, fileName);
-                if (!Directory.Exists (stateDir))
-                    Directory.CreateDirectory (stateDir);
-                AssetDatabase.Refresh ();
+            var texHeight = Mathf.NextPowerOfTwo (animationFrameCount * totalClips);
 
-                newAnimation.Play (clip.name);
-                var frames = Mathf.NextPowerOfTwo ((int) (clip.length / 0.05f));
+            var positionTexture = new Texture2D (texWidth, texHeight, TextureFormat.RGBAFloat, false, false);
+            positionTexture.wrapMode = TextureWrapMode.Clamp;
+            positionTexture.filterMode = FilterMode.Point;
+            var normalTexture = new Texture2D (texWidth, texHeight, TextureFormat.RGBAFloat, false, false);
+            normalTexture.wrapMode = TextureWrapMode.Clamp;
+            normalTexture.filterMode = FilterMode.Point;
+
+            var currentClip = 0;
+            var boneOffset = Vector3.zero;
+            var boneScale = 0f;
+
+            for (int i = 0; i < clipsImport.Count; i++)
+            {
+                if (clipsImport[i] == false) continue;
+                var clip = clips[i];
+                var frames = Mathf.NextPowerOfTwo ((int) (clip.length / setDt));
                 var frameRate = clip.length / frames;
                 var time = 0f;
                 var infoList = new List<VertInfo> ();
 
-                var positionsRenderTexture = new RenderTexture (texWidth, frames, 0, RenderTextureFormat.ARGBHalf);
-                positionsRenderTexture.name = string.Format ("{0}.{1}.Positions", chosen.name, fileName);
-                var normalRenderTexture = new RenderTexture (texWidth, frames, 0, RenderTextureFormat.ARGBHalf);
-                normalRenderTexture.name = string.Format ("{0}.{1}.Normals", chosen.name, fileName);
+                var positionsRenderTexture = new RenderTexture (texWidth, animationFrameCount, 0, RenderTextureFormat.ARGBFloat);
+                var normalRenderTexture = new RenderTexture (texWidth, animationFrameCount, 0, RenderTextureFormat.ARGBFloat);
                 foreach (var rt in new [] { positionsRenderTexture, normalRenderTexture })
                 {
                     rt.enableRandomWrite = true;
@@ -259,21 +284,29 @@ namespace AnimationBaker
                     GL.Clear (true, true, Color.clear);
                 }
 
-                var scale = Vector3.one;
-                scale.x = 1 / skinTransform.localScale.x;
-                scale.y = 1 / skinTransform.localScale.y;
-                scale.z = 1 / skinTransform.localScale.z;
-
-                var scaledOffset = Vector3.Scale (offset, skinTransform.localScale);
-
-                for (var i = 0; i < frames; i++)
+                for (var j = 0; j < animationFrameCount; j++)
                 {
-                    clip.SampleAnimation (instance, time);
+                    clip.SampleAnimation (instance, Mathf.Repeat (time, clip.length));
                     skinRenderer.BakeMesh (animMesh);
-                    for (int j = 0; j < verticesCount; j++)
+                    if (boneScale == 0)
                     {
-                        var vert = Vector3.Scale (skinTransform.TransformPoint (animMesh.vertices[j]), scale) + scaledOffset;
-                        infoList.Add (new VertInfo { position = vert, normal = animMesh.normals[j] });
+                        var bounds = new Bounds ();
+                        for (int k = 0; k < animMesh.vertexCount; k++)
+                        {
+                            var point = skinTransform.TransformPoint (animMesh.vertices[k]);
+                            if (k == 0)
+                            {
+                                bounds.center = point;
+                            }
+                            bounds.Encapsulate (point);
+                        }
+                        boneScale = newMesh.bounds.size.y / bounds.size.y;
+                        boneOffset.y = 0 - bounds.min.y;
+                    }
+                    for (int k = 0; k < verticesCount; k++)
+                    {
+                        var vert = (skinTransform.TransformPoint (animMesh.vertices[k]) + boneOffset) * boneScale;
+                        infoList.Add (new VertInfo { position = vert, normal = animMesh.normals[k] });
                     }
                     time += frameRate;
                 }
@@ -288,41 +321,50 @@ namespace AnimationBaker
                 infoTexGen.SetBuffer (kernel, "Info", buffer);
                 infoTexGen.SetTexture (kernel, "OutPosition", positionsRenderTexture);
                 infoTexGen.SetTexture (kernel, "OutNormal", normalRenderTexture);
-                infoTexGen.Dispatch (kernel, verticesCount / (int) x + 1, frames / (int) y + 1, 1);
+                infoTexGen.Dispatch (kernel, verticesCount / (int) x + 1, animationFrameCount / (int) y + 1, 1);
 
                 buffer.Release ();
 
                 var posTex = RenderTextureToTexture2D.Convert (positionsRenderTexture);
                 var normTex = RenderTextureToTexture2D.Convert (normalRenderTexture);
-                Graphics.CopyTexture (positionsRenderTexture, posTex);
-                Graphics.CopyTexture (normalRenderTexture, normTex);
 
-                AssetDatabase.CreateAsset (posTex, Utils.Combine (statePath, positionsRenderTexture.name + ".asset"));
-                AssetDatabase.CreateAsset (normTex, Utils.Combine (statePath, normalRenderTexture.name + ".asset"));
+                Graphics.CopyTexture (posTex, 0, 0, 0, 0, texWidth, animationFrameCount, positionTexture, 0, 0, 0, currentClip * animationFrameCount);
+                Graphics.CopyTexture (normTex, 0, 0, 0, 0, texWidth, animationFrameCount, normalTexture, 0, 0, 0, currentClip * animationFrameCount);
 
-                var materials = new Material[skinRenderer.sharedMaterials.Length];
-                for (int i = 0; i < skinRenderer.sharedMaterials.Length; i++)
-                {
-                    var mat = new Material (playShader);
-                    mat.name = string.Format ("{0}.{1}.{2}.Materials", chosen.name, fileName, i);
-                    mat.SetTexture ("_MainTex", skinRenderer.sharedMaterials[i].mainTexture);
-                    mat.SetColor ("_Color", skinRenderer.sharedMaterials[i].color);
-                    mat.SetTexture ("_PosTex", posTex);
-                    mat.SetTexture ("_NmlTex", normTex);
-                    mat.SetFloat ("_Length", clip.length);
-                    mat.SetFloat ("_Loop", 1f);
-                    mat.EnableKeyword ("ANIM_LOOP");
-                    AssetDatabase.CreateAsset (mat, statePath + "/" + mat.name + ".mat");
-                    materials[i] = mat;
-                }
-                var go = new GameObject (chosen.name + "." + fileName);
-                go.AddComponent<MeshFilter> ().sharedMesh = newMesh;
-                var mr = go.AddComponent<MeshRenderer> ();
-                mr.sharedMaterials = materials;
-                mr.material = materials[0];
-                PrefabUtility.CreatePrefab (Utils.Combine (prefabPath, go.name + ".prefab"), go);
-                DestroyImmediate (go);
+                positionsRenderTexture.Release ();
+                normalRenderTexture.Release ();
+                currentClip++;
             }
+
+            AssetDatabase.CreateAsset (positionTexture, Utils.Combine (prefabPath, "Positions.asset"));
+            AssetDatabase.CreateAsset (normalTexture, Utils.Combine (prefabPath, "Normals.asset"));
+
+            var materials = new Material[skinRenderer.sharedMaterials.Length];
+            for (int i = 0; i < skinRenderer.sharedMaterials.Length; i++)
+            {
+                var mat = new Material (playShader);
+                mat.name = string.Format ("{0}.{1}.Material", chosen.name, i);
+                mat.SetTexture ("_MainTex", skinRenderer.sharedMaterials[i].mainTexture);
+                mat.SetColor ("_Color", skinRenderer.sharedMaterials[i].color);
+                mat.SetTexture ("_PosTex", positionTexture);
+                mat.SetTexture ("_NmlTex", normalTexture);
+                mat.SetFloat ("_Loop", 1f);
+                mat.SetFloat ("_TotalFrames", texHeight);
+                mat.SetFloat ("_AnimationFrameCount", animationFrameCount);
+                mat.SetFloat ("_TotalAnimations", totalClips);
+                mat.EnableKeyword ("ANIM_LOOP");
+                mat.enableInstancing = true;
+                AssetDatabase.CreateAsset (mat, prefabPath + "/" + mat.name + ".mat");
+                materials[i] = mat;
+            }
+            var go = new GameObject (chosen.name);
+            go.AddComponent<MeshFilter> ().sharedMesh = newMesh;
+            var mr = go.AddComponent<MeshRenderer> ();
+            mr.sharedMaterials = materials;
+            mr.material = materials[0];
+            PrefabUtility.CreatePrefab (Utils.Combine (prefabPath, go.name + ".prefab"), go);
+            EditorGUIUtility.PingObject (go);
+            DestroyImmediate (go);
             DestroyImmediate (instance);
         }
 
