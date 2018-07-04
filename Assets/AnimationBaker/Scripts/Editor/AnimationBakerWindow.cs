@@ -363,7 +363,6 @@ namespace AnimationBaker
             mr.sharedMaterials = materials;
             mr.material = materials[0];
             PrefabUtility.CreatePrefab (Utils.Combine (prefabPath, go.name + ".prefab"), go);
-            EditorGUIUtility.PingObject (go);
             DestroyImmediate (go);
             DestroyImmediate (instance);
         }
@@ -387,6 +386,7 @@ namespace AnimationBaker
             {
                 vertices[i] = vertices[i] + vertexOffset;
             }
+            newMesh.subMeshCount = oldMesh.subMeshCount;
             newMesh.SetVertices (vertices);
             for (int i = 0; i < oldMesh.subMeshCount; i++)
             {

@@ -9,8 +9,9 @@
 		_NmlTex("Normal Texture", 2D) = "white"{}
 		_TotalAnimations("Total Animation", float) = 0
 		_CurrentAnimation("Current Animation", float) = 0
-		_TotalFrames("Total Frames", float) = 0
-		_AnimationFrameCount("Animation Frame Count", float) = 0
+		_AnimationFPS("Animation FPS", float) = 30
+		[HideInInspector] _TotalFrames("Total Frames", float) = 0
+		[HideInInspector] _AnimationFrameCount("Animation Frame Count", float) = 0
     }
 
     SubShader
@@ -39,6 +40,7 @@
 				};
 				sampler2D _MainTex, _PosTex, _NmlTex;
 				float4 _PosTex_TexelSize, _Color;
+				float _AnimationFPS;
 				float _TotalFrames;
 				float _AnimationFrameCount;
 				float _CurrentAnimation;
@@ -46,9 +48,9 @@
 				v2f vert (appdata_base v, uint vid : SV_VertexID)
 				{
 					float x = (vid + 0.5) * ts.x;
-					float y = fmod(_Time.y, 1) * _AnimationFrameCount / _TotalFrames + (_AnimationFrameCount / _TotalFrames) * _CurrentAnimation;
+					float y = fmod(_Time.y * _AnimationFPS / _AnimationFrameCount, 1) * _AnimationFrameCount / _TotalFrames + (_AnimationFrameCount / _TotalFrames) * _CurrentAnimation;
 					float4 pos = tex2Dlod(_PosTex, float4(x, y, 0, 0));
-					float3 normal = tex2Dlod(_NmlTex, float4(x,  y, 0, 0));
+					float3 normal = tex2Dlod(_NmlTex, float4(x, y, 0, 0));
 					v2f o;
 					UNITY_SETUP_INSTANCE_ID(v);
 					UNITY_TRANSFER_INSTANCE_ID(v, o);
@@ -76,8 +78,7 @@
 		Pass {
 			Name "ShadowCaster"
 			Tags { "LightMode" = "ShadowCaster" }
-
-				CGPROGRAM
+			CGPROGRAM
 				#pragma vertex vert
 				#pragma fragment frag
 				#pragma target 2.0
@@ -95,6 +96,7 @@
 
 				sampler2D _MainTex, _PosTex, _NmlTex;
 				float4 _PosTex_TexelSize, _Color;
+				float _AnimationFPS;
 				float _TotalFrames;
 				float _AnimationFrameCount;
 				float _CurrentAnimation;
@@ -102,7 +104,7 @@
 				v2f vert( appdata_base v, uint vid : SV_VertexID)
 				{
 					float x = (vid + 0.5) * ts.x;
-					float y = fmod(_Time.y, 1) * _AnimationFrameCount / _TotalFrames + (_AnimationFrameCount / _TotalFrames) * _CurrentAnimation;
+					float y = fmod(_Time.y * _AnimationFPS / _AnimationFrameCount, 1) * _AnimationFrameCount / _TotalFrames + (_AnimationFrameCount / _TotalFrames) * _CurrentAnimation;
 					float4 pos = tex2Dlod(_PosTex, float4(x, y, 0, 0));
 					float3 normal = tex2Dlod(_NmlTex, float4(x, y, 0, 0));
 					v2f o;
@@ -120,8 +122,7 @@
 				{
 					SHADOW_CASTER_FRAGMENT(i)
 				}
-				ENDCG
-
+			ENDCG
 		}
     }
 }
