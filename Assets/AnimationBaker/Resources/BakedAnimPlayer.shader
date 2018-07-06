@@ -9,7 +9,7 @@
 		_NmlTex("Normal Texture", 2D) = "white"{}
 		_TotalAnimations("Total Animation", float) = 0
 		_CurrentAnimation("Current Animation", float) = 0
-		_AnimationFPS("Animation FPS", float) = 60
+		_PlaybackSpeed("Playback Speed", float) = 1
 		[HideInInspector] _TotalFrames("Total Frames", float) = 0
 		[HideInInspector] _AnimationFrameCount("Animation Frame Count", float) = 0
     }
@@ -40,7 +40,7 @@
 				};
 				sampler2D _MainTex, _PosTex, _NmlTex;
 				float4 _PosTex_TexelSize, _Color;
-				float _AnimationFPS;
+				float _PlaybackSpeed;
 				float _TotalFrames;
 				float _AnimationFrameCount;
 				
@@ -52,12 +52,12 @@
 				v2f vert (appdata_base v, uint vid : SV_VertexID)
 				{
 					UNITY_SETUP_INSTANCE_ID(v);
-					float t = UNITY_ACCESS_INSTANCED_PROP(Props, _OverrideFrame);
-					if(t == 0) {
-						t = _Time.y * _AnimationFPS / _AnimationFrameCount;
+					float frame = UNITY_ACCESS_INSTANCED_PROP(Props, _OverrideFrame);
+					if(frame == 0) {
+						frame = fmod(_Time.y * _PlaybackSpeed, 1.0);
 					}
 					float x = (vid + 0.5) * ts.x;
-					float y = fmod(t, 1) * _AnimationFrameCount / _TotalFrames + (_AnimationFrameCount / _TotalFrames) * UNITY_ACCESS_INSTANCED_PROP(Props, _CurrentAnimation);
+					float y = frame * _AnimationFrameCount / _TotalFrames + (_AnimationFrameCount / _TotalFrames) * UNITY_ACCESS_INSTANCED_PROP(Props, _CurrentAnimation);
 					float4 pos = tex2Dlod(_PosTex, float4(x, y, 0, 0));
 					float3 normal = tex2Dlod(_NmlTex, float4(x, y, 0, 0));
 					v2f o;
@@ -103,7 +103,7 @@
 
 				sampler2D _MainTex, _PosTex, _NmlTex;
 				float4 _PosTex_TexelSize, _Color;
-				float _AnimationFPS;
+				float _PlaybackSpeed;
 				float _TotalFrames;
 				float _AnimationFrameCount;
 				
@@ -117,7 +117,7 @@
 					UNITY_SETUP_INSTANCE_ID(v);
 					float t =  UNITY_ACCESS_INSTANCED_PROP(Props, _OverrideFrame);
 					if(t == 0) {
-						t = _Time.y * _AnimationFPS / _AnimationFrameCount;
+						t = _Time.y * _PlaybackSpeed / _AnimationFrameCount;
 					}
 					float x = (vid + 0.5) * ts.x;
 					float y = fmod(t, 1) * _AnimationFrameCount / _TotalFrames + (_AnimationFrameCount / _TotalFrames) * UNITY_ACCESS_INSTANCED_PROP(Props, _CurrentAnimation);
