@@ -1,4 +1,5 @@
-﻿Shader "BakedAnimation/Lit"
+﻿
+Shader "BakedAnimation/Lit"
 {
 				
     Properties
@@ -19,7 +20,9 @@
         Pass
         {
             Tags {"LightMode"="ForwardBase"}
+			Cull Off
             CGPROGRAM
+				#pragma target 5.0
 				#pragma vertex vert
 				#pragma fragment frag
 				#include "UnityCG.cginc"
@@ -27,6 +30,7 @@
 				#include "AutoLight.cginc"
 				#pragma multi_compile_instancing
 				#define ts _PosTex_TexelSize
+             	RWStructuredBuffer<float2> _RunningState : register(u1);
 				
 				struct v2f
 				{
@@ -43,21 +47,35 @@
 				float _PlaybackSpeed;
 				float _TotalFrames;
 				float _AnimationFrameCount;
-				
+				float _SingleFrame;
+
 				UNITY_INSTANCING_BUFFER_START(Props)
 					UNITY_DEFINE_INSTANCED_PROP(float, _CurrentAnimation)
 					UNITY_DEFINE_INSTANCED_PROP(float, _OverrideFrame)
+					UNITY_DEFINE_INSTANCED_PROP(float, _EntityID)
 				UNITY_INSTANCING_BUFFER_END(Props)
 
 				v2f vert (appdata_base v, uint vid : SV_VertexID)
 				{
 					UNITY_SETUP_INSTANCE_ID(v);
+					_SingleFrame = _AnimationFrameCount / _TotalFrames;
+					float entityId = UNITY_ACCESS_INSTANCED_PROP(Props, _EntityID);
+					float currentClip = UNITY_ACCESS_INSTANCED_PROP(Props, _CurrentAnimation);
 					float frame = UNITY_ACCESS_INSTANCED_PROP(Props, _OverrideFrame);
+					float2 state = _RunningState[entityId];
+					float lastClip = state.x;
+					float offset = state.y;
+					float time = _Time.y - offset;
+					if(lastClip != currentClip) {
+						state.x = currentClip;
+						state.y = _Time.y % 1.0;
+						_RunningState[entityId] = state;
+					}
 					if(frame == 0) {
-						frame = (_Time.y * _PlaybackSpeed) % 1.0;
+						frame = (time * _PlaybackSpeed) % 1.0;
 					}
 					float x = (vid + 0.5) * ts.x;
-					float y = frame * _AnimationFrameCount / _TotalFrames + (_AnimationFrameCount / _TotalFrames) * UNITY_ACCESS_INSTANCED_PROP(Props, _CurrentAnimation);
+					float y = frame * _SingleFrame + _SingleFrame * currentClip;
 					float4 pos = tex2Dlod(_PosTex, float4(x, y, 0, 0));
 					float3 normal = tex2Dlod(_NmlTex, float4(x, y, 0, 0));
 					v2f o;
@@ -81,19 +99,19 @@
             ENDCG
         }
 		
-		// Pass to render object as a shadow caster
 		Pass {
 			Name "ShadowCaster"
 			Tags { "LightMode" = "ShadowCaster" }
 			CGPROGRAM
 				#pragma vertex vert
 				#pragma fragment frag
-				#pragma target 2.0
+				#pragma target 5.0
 				#pragma multi_compile_shadowcaster
 				#pragma multi_compile_instancing // allow instanced shadow pass for most of the shaders
 				#include "UnityCG.cginc"
 				#pragma multi_compile ___ ANIM_LOOP
 				#define ts _PosTex_TexelSize
+             	RWStructuredBuffer<float2> _RunningState : register(u1);
 
 				struct v2f {
 					V2F_SHADOW_CASTER;
@@ -106,21 +124,30 @@
 				float _PlaybackSpeed;
 				float _TotalFrames;
 				float _AnimationFrameCount;
+				float _SingleFrame;
 				
 				UNITY_INSTANCING_BUFFER_START(Props)
 					UNITY_DEFINE_INSTANCED_PROP(float, _CurrentAnimation)
 					UNITY_DEFINE_INSTANCED_PROP(float, _OverrideFrame)
+					UNITY_DEFINE_INSTANCED_PROP(float, _EntityID)
 				UNITY_INSTANCING_BUFFER_END(Props)
 
 				v2f vert( appdata_base v, uint vid : SV_VertexID)
 				{
 					UNITY_SETUP_INSTANCE_ID(v);
+					_SingleFrame = _AnimationFrameCount / _TotalFrames;
+					float entityId = UNITY_ACCESS_INSTANCED_PROP(Props, _EntityID);
+					float currentClip = UNITY_ACCESS_INSTANCED_PROP(Props, _CurrentAnimation);
 					float frame = UNITY_ACCESS_INSTANCED_PROP(Props, _OverrideFrame);
+					float2 state = _RunningState[entityId];
+					float lastClip = state.x;
+					float offset = state.y;
+					float time = _Time.y - offset;
 					if(frame == 0) {
-						frame = (_Time.y * _PlaybackSpeed) % 1.0;
+						frame = (time * _PlaybackSpeed) % 1.0;
 					}
 					float x = (vid + 0.5) * ts.x;
-					float y = frame * _AnimationFrameCount / _TotalFrames + (_AnimationFrameCount / _TotalFrames) * UNITY_ACCESS_INSTANCED_PROP(Props, _CurrentAnimation);
+					float y = frame * _SingleFrame + _SingleFrame * currentClip;
 					float4 pos = tex2Dlod(_PosTex, float4(x, y, 0, 0));
 					float3 normal = tex2Dlod(_NmlTex, float4(x, y, 0, 0));
 					v2f o;

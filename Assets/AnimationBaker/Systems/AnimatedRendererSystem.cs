@@ -19,15 +19,20 @@ namespace Animationbaker.Systems
     public class AnimatedRendererSystem : ComponentSystem
     {
 
-        public int lastLength;
-        public Dictionary<int, Animated> cachedAnimated = new Dictionary<int, Animated>();
-        public Dictionary<int, List<AnimatedState>> animatedData = new Dictionary<int, List<AnimatedState>>();
-        public Dictionary<int, List<Matrix4x4>> matricesData = new Dictionary<int, List<Matrix4x4>>();
-        public Dictionary<int, int> animatedIndex = new Dictionary<int, int>();
-        public Matrix4x4[] matrix = new Matrix4x4[1023];
-        public MaterialPropertyBlock block = new MaterialPropertyBlock();
-        public float[] currentAnimations = new float[1023];
-        public float[] overrideFrames = new float[1023];
+        private int lastLength;
+        private Dictionary<int, Animated> cachedAnimated = new Dictionary<int, Animated>();
+        private Dictionary<int, List<Matrix4x4>> matricesData = new Dictionary<int, List<Matrix4x4>>();
+        private Dictionary<int, List<float>> entityIndices = new Dictionary<int, List<float>>();
+        private Dictionary<int, List<float>> clipDatas = new Dictionary<int, List<float>>();
+        private Dictionary<int, List<float>> overrideFrames = new Dictionary<int, List<float>>();
+        private MaterialPropertyBlock block = new MaterialPropertyBlock();
+
+        private Matrix4x4[] tempMatrices = new Matrix4x4[1023];
+        private float[] tempIndices = new float[1023];
+        private float[] tempClipDatas = new float[1023];
+        private float[] overrideFrameDatas = new float[1023];
+
+        private ComputeBuffer computeData;
 
         struct InjectData
         {
@@ -55,26 +60,28 @@ namespace Animationbaker.Systems
 
         private void Render()
         {
-            foreach (var item in animatedData)
+            foreach (var item in cachedAnimated)
             {
-                var currentLength = item.Value.Count;
-                var values = item.Value;
-                var start = 0;
                 var hash = item.Key;
-                var animated = cachedAnimated[hash];
                 var matrices = matricesData[hash];
+                var animated = cachedAnimated[hash];
+                var entityIds = entityIndices[hash];
+                var clipData = clipDatas[hash];
+                var overrideFrameData = overrideFrames[hash];
+                var currentLength = matrices.Count;
+                var start = 0;
                 while (start < currentLength)
                 {
                     var len = Math.Min(1023, currentLength - start);
-                    for (int j = 0; j < len; j++)
-                    {
-                        matrix[j] = matrices[start + j];
-                        currentAnimations[j] = values[start + j].State;
-                        overrideFrames[j] = values[start + j].SetFrame;
-                    }
-                    block.SetFloatArray("_OverrideFrame", overrideFrames);
-                    block.SetFloatArray("_CurrentAnimation", currentAnimations);
-                    Graphics.DrawMeshInstanced(animated.Mesh, 0, animated.Material, matrix, len, block, ShadowCastingMode.On, true);
+                    matrices.CopyTo(start, tempMatrices, 0, len);
+                    entityIds.CopyTo(start, tempIndices, 0, len);
+                    clipData.CopyTo(start, tempClipDatas, 0, len);
+                    overrideFrameData.CopyTo(start, overrideFrameDatas, 0, len);
+                    block.SetFloatArray("_CurrentAnimation", tempClipDatas);
+                    block.SetFloatArray("_OverrideFrame", overrideFrameDatas);
+                    block.SetFloatArray("_EntityID", tempIndices);
+                    block.SetBuffer("_RunningState", computeData);
+                    Graphics.DrawMeshInstanced(animated.Mesh, 0, animated.Material, tempMatrices, len, block, ShadowCastingMode.On, true);
                     start += len;
                 }
             }
@@ -82,20 +89,26 @@ namespace Animationbaker.Systems
 
         private void UpdateState()
         {
-            foreach (var item in animatedData)
+            foreach (var item in matricesData)
             {
                 item.Value.Clear();
             }
-            foreach (var item in matricesData)
+            foreach (var item in clipDatas)
+            {
+                item.Value.Clear();
+            }
+            foreach (var item in overrideFrames)
             {
                 item.Value.Clear();
             }
             for (int i = 0; i < data.entities.Length; i++)
             {
                 var matrix = data.matrices[i].Value;
-                var hash = data.animatedStates[i].AnimationHash;
-                animatedData[hash].Add(data.animatedStates[i]);
+                var state = data.animatedStates[i];
+                var hash = state.AnimationHash;
                 matricesData[hash].Add(new Matrix4x4(matrix.c0, matrix.c1, matrix.c2, matrix.c3));
+                clipDatas[hash].Add(state.Clip);
+                overrideFrames[hash].Add(state.OverrideFrame);
             }
             lastLength = data.entities.Length;
         }
@@ -103,28 +116,44 @@ namespace Animationbaker.Systems
         private void RefreshCache()
         {
             cachedAnimated.Clear();
-            animatedData.Clear();
-            animatedIndex.Clear();
             matricesData.Clear();
+            entityIndices.Clear();
+            clipDatas.Clear();
+            overrideFrames.Clear();
             for (int i = 0; i < data.entities.Length; i++)
             {
+                int index = data.entities[i].Index;
                 var animated = data.animateds[i];
                 var state = data.animatedStates[i];
                 var hash = animated.GetHashCode();
                 if (!cachedAnimated.ContainsKey(hash))
                 {
                     cachedAnimated.Add(hash, animated);
-                    animatedData.Add(hash, new List<AnimatedState>());
                     matricesData.Add(hash, new List<Matrix4x4>());
+                    entityIndices.Add(hash, new List<float>());
+                    clipDatas.Add(hash, new List<float>());
+                    overrideFrames.Add(hash, new List<float>());
                 }
-                animatedData[hash].Add(data.animatedStates[i]);
                 var matrix = data.matrices[i].Value;
                 matricesData[hash].Add(new Matrix4x4(matrix.c0, matrix.c1, matrix.c2, matrix.c3));
-                animatedIndex[data.entities[i].Index] = animatedData[hash].Count - 1;
+                clipDatas[hash].Add(state.Clip);
+                overrideFrames[hash].Add(state.OverrideFrame);
+                entityIndices[hash].Add(index);
                 state.AnimationHash = hash;
                 data.animatedStates[i] = state;
             }
             lastLength = data.entities.Length;
+        }
+
+        protected override void OnCreateManager(int capacity)
+        {
+            computeData = new ComputeBuffer(1024 * 1024, 2 * 4, ComputeBufferType.Default);
+        }
+
+        protected override void OnDestroyManager()
+        {
+            Graphics.ClearRandomWriteTargets();
+            computeData.Dispose();
         }
     }
 }

@@ -7,8 +7,8 @@ namespace Animationbaker.Components
     public struct AnimatedState : IComponentData
     {
         public int AnimationHash;
-        public int State;
-        public float SetFrame;
+        public int Clip;
+        public float OverrideFrame;
     }
 
     [System.Serializable]
