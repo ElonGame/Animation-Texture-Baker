@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: Archer.0.Material
-  m_Shader: {fileID: 4800000, guid: c6e38db4bb1289d4d888dbc1d121a69e, type: 3}
+  m_Shader: {fileID: 4800000, guid: 0de03a966c49d774782228001ced119c, type: 3}
   m_ShaderKeywords: ANIM_LOOP
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1

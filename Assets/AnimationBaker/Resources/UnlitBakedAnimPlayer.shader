@@ -1,4 +1,4 @@
-﻿Shader "BakedAnimation/Lit"
+﻿Shader "BakedAnimation/Unlit"
 {
 				
     Properties
@@ -80,62 +80,5 @@
 				}
             ENDCG
         }
-		
-		// Pass to render object as a shadow caster
-		Pass {
-			Name "ShadowCaster"
-			Tags { "LightMode" = "ShadowCaster" }
-			CGPROGRAM
-				#pragma vertex vert
-				#pragma fragment frag
-				#pragma target 2.0
-				#pragma multi_compile_shadowcaster
-				#pragma multi_compile_instancing // allow instanced shadow pass for most of the shaders
-				#include "UnityCG.cginc"
-				#pragma multi_compile ___ ANIM_LOOP
-				#define ts _PosTex_TexelSize
-
-				struct v2f {
-					V2F_SHADOW_CASTER;
-					UNITY_VERTEX_OUTPUT_STEREO
-                	UNITY_VERTEX_INPUT_INSTANCE_ID
-				};
-
-				sampler2D _MainTex, _PosTex, _NmlTex;
-				float4 _PosTex_TexelSize, _Color;
-				float _AnimationFPS;
-				float _TotalFrames;
-				float _AnimationFrameCount;
-				
-				UNITY_INSTANCING_BUFFER_START(Props)
-					UNITY_DEFINE_INSTANCED_PROP(float, _CurrentAnimation)
-					UNITY_DEFINE_INSTANCED_PROP(float, _OverrideFrame)
-				UNITY_INSTANCING_BUFFER_END(Props)
-
-				v2f vert( appdata_base v, uint vid : SV_VertexID)
-				{
-					UNITY_SETUP_INSTANCE_ID(v);
-					float t =  UNITY_ACCESS_INSTANCED_PROP(Props, _OverrideFrame);
-					if(t == 0) {
-						t = _Time.y * _AnimationFPS / _AnimationFrameCount;
-					}
-					float x = (vid + 0.5) * ts.x;
-					float y = fmod(t, 1) * _AnimationFrameCount / _TotalFrames + (_AnimationFrameCount / _TotalFrames) * UNITY_ACCESS_INSTANCED_PROP(Props, _CurrentAnimation);
-					float4 pos = tex2Dlod(_PosTex, float4(x, y, 0, 0));
-					float3 normal = tex2Dlod(_NmlTex, float4(x, y, 0, 0));
-					v2f o;
-					v.vertex = pos;
-					v.normal = UnityObjectToWorldNormal(normal);
-					UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
-					TRANSFER_SHADOW_CASTER_NORMALOFFSET(o)
-					return o;
-				}
-
-				float4 frag( v2f i ) : SV_Target
-				{
-					SHADOW_CASTER_FRAGMENT(i)
-				}
-			ENDCG
-		}
     }
 }
