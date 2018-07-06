@@ -21,7 +21,6 @@ namespace Example
         public static EntityArchetype Unit;
         public static List<Animated> Animations = new List<Animated>();
         public static UnitData[] UnitDatas;
-        public static bool IsSpawning = false;
 
         static EntityManager manager;
         static SpawnerSystem spawner;
@@ -38,7 +37,6 @@ namespace Example
             world.GetOrCreateManager<NavAgentAvoidanceSystem>();
             var targetSystem = world.GetOrCreateManager<SetTargetSystem>();
             spawner = world.GetOrCreateManager<SpawnerSystem>();
-            targetSystem.Enabled = false;
             world.GetOrCreateManager<UpdateMatrixSystem>();
             manager = world.GetOrCreateManager<EntityManager>();
             var allWorlds = new World[] { world };
@@ -75,19 +73,8 @@ namespace Example
                 });
             }
             var caddy = GameObject.FindObjectOfType<MobileRTSCam>();
-            IsSpawning = true;
             if (caddy)
-                caddy.StartCoroutine(Spawn());
-        }
-
-        private static IEnumerator Spawn()
-        {
-            yield return new WaitForSeconds(1);
-            spawner.PendingSpawn = 10;
-            yield return new WaitForSeconds(1);
-            IsSpawning = false;
-            var targetSystem = World.Active.GetOrCreateManager<SetTargetSystem>();
-            targetSystem.Enabled = true;
+                spawner.PendingSpawn = 1000;
         }
 
         static void DomainUnloadShutdown()

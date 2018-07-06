@@ -54,7 +54,7 @@
 					UNITY_SETUP_INSTANCE_ID(v);
 					float frame = UNITY_ACCESS_INSTANCED_PROP(Props, _OverrideFrame);
 					if(frame == 0) {
-						frame = fmod(_Time.y * _PlaybackSpeed, 1.0);
+						frame = (_Time.y * _PlaybackSpeed) % 1.0;
 					}
 					float x = (vid + 0.5) * ts.x;
 					float y = frame * _AnimationFrameCount / _TotalFrames + (_AnimationFrameCount / _TotalFrames) * UNITY_ACCESS_INSTANCED_PROP(Props, _CurrentAnimation);
@@ -115,12 +115,12 @@
 				v2f vert( appdata_base v, uint vid : SV_VertexID)
 				{
 					UNITY_SETUP_INSTANCE_ID(v);
-					float t =  UNITY_ACCESS_INSTANCED_PROP(Props, _OverrideFrame);
-					if(t == 0) {
-						t = _Time.y * _PlaybackSpeed / _AnimationFrameCount;
+					float frame = UNITY_ACCESS_INSTANCED_PROP(Props, _OverrideFrame);
+					if(frame == 0) {
+						frame = (_Time.y * _PlaybackSpeed) % 1.0;
 					}
 					float x = (vid + 0.5) * ts.x;
-					float y = fmod(t, 1) * _AnimationFrameCount / _TotalFrames + (_AnimationFrameCount / _TotalFrames) * UNITY_ACCESS_INSTANCED_PROP(Props, _CurrentAnimation);
+					float y = frame * _AnimationFrameCount / _TotalFrames + (_AnimationFrameCount / _TotalFrames) * UNITY_ACCESS_INSTANCED_PROP(Props, _CurrentAnimation);
 					float4 pos = tex2Dlod(_PosTex, float4(x, y, 0, 0));
 					float3 normal = tex2Dlod(_NmlTex, float4(x, y, 0, 0));
 					v2f o;

@@ -82,13 +82,20 @@ namespace Animationbaker.Systems
 
         private void UpdateState()
         {
+            foreach (var item in animatedData)
+            {
+                item.Value.Clear();
+            }
+            foreach (var item in matricesData)
+            {
+                item.Value.Clear();
+            }
             for (int i = 0; i < data.entities.Length; i++)
             {
                 var matrix = data.matrices[i].Value;
                 var hash = data.animatedStates[i].AnimationHash;
-                var index = animatedIndex[data.entities[i].Index];
-                animatedData[hash][index] = data.animatedStates[i];
-                matricesData[hash][index] = new Matrix4x4(matrix.c0, matrix.c1, matrix.c2, matrix.c3);
+                animatedData[hash].Add(data.animatedStates[i]);
+                matricesData[hash].Add(new Matrix4x4(matrix.c0, matrix.c1, matrix.c2, matrix.c3));
             }
             lastLength = data.entities.Length;
         }

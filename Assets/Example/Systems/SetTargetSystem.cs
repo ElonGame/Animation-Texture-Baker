@@ -203,7 +203,6 @@ namespace Example.Systems
         [Inject] NavAgentSystem navAgentSystem;
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
-            if (ExampleBootstrap.IsSpawning) return inputDeps;
             var buffer = barrier.CreateCommandBuffer();
             int h = 0;
             while (sendDamage.TryDequeue(out DamageInfo info))
