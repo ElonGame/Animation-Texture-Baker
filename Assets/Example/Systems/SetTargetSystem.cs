@@ -1,28 +1,36 @@
 using System;
 using System.Collections.Generic;
-using Animationbaker.Components;
-using Example.Components;
-using NavJob.Components;
-using NavJob.Systems;
+using UnityEngine;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Transforms;
-using UnityEngine;
+using Animationbaker.Components;
+using Example.Components;
+using NavJob.Components;
+using NavJob.Systems;
 
 namespace Example.Systems
 {
-    [UpdateAfter (typeof (NavAgentToPositionSyncSystem))]
+    [UpdateAfter(typeof(NavAgentToPositionSyncSystem))]
     public class SetTargetSystem : JobComponentSystem
     {
         NativeQueue<DamageInfo> sendDamage;
+        NativeQueue<PathfindingInfo> needsPathfinding;
 
         struct DamageInfo
         {
             public int Index;
             public float Damage;
+        }
+
+        struct PathfindingInfo
+        {
+            public Entity Entity;
+            public NavAgent Agent;
+            public float3 Destination;
         }
 
         struct SetTargetJob : IJobParallelFor
@@ -34,9 +42,10 @@ namespace Example.Systems
             ComponentDataArray<Unit> units;
             [WriteOnly] EntityCommandBuffer.Concurrent buffer;
             [WriteOnly] public NativeQueue<DamageInfo>.Concurrent sendDamage;
+            [WriteOnly] public NativeQueue<PathfindingInfo>.Concurrent needsPathfinding;
             [ReadOnly] float dt;
 
-            public SetTargetJob (float dt, EntityCommandBuffer buffer, NativeQueue<DamageInfo>.Concurrent sendDamage, EntityArray entities, ComponentDataArray<NavAgent> agents, ComponentDataArray<AnimatedState> animations, ComponentDataArray<Position> positions, ComponentDataArray<Unit> units)
+            public SetTargetJob(float dt, EntityCommandBuffer buffer, NativeQueue<DamageInfo>.Concurrent sendDamage, NativeQueue<PathfindingInfo>.Concurrent needsPathfinding, EntityArray entities, ComponentDataArray<NavAgent> agents, ComponentDataArray<AnimatedState> animations, ComponentDataArray<Position> positions, ComponentDataArray<Unit> units)
             {
                 this.dt = dt;
                 this.animations = animations;
@@ -45,10 +54,12 @@ namespace Example.Systems
                 this.positions = positions;
                 this.units = units;
                 this.sendDamage = sendDamage;
+                this.needsPathfinding = needsPathfinding;
                 this.buffer = buffer;
             }
 
-            public void Execute (int id)
+            [BurstCompile]
+            public void Execute(int id)
             {
                 var unit = units[id];
                 var agent = agents[id];
@@ -70,7 +81,7 @@ namespace Example.Systems
 
                         if (unit.TargetIndex != 0)
                         {
-                            NavAgentSystem.SetDestinationStatic (entities[id], agent, positions[unit.TargetIndex].Value);
+                            needsPathfinding.Enqueue(new PathfindingInfo { Entity = entities[id], Agent = agent, Destination = positions[unit.TargetIndex].Value });
                             unit.State = UnitState.Pathfinding;
                         }
                         break;
@@ -83,7 +94,7 @@ namespace Example.Systems
                         }
                         break;
                     case UnitState.MoveInRange:
-                        var dist = math.length (positions[id].Value - positions[unit.TargetIndex].Value);
+                        var dist = math.length(positions[id].Value - positions[unit.TargetIndex].Value);
                         unit.NextRepath -= dt;
                         if (dist < unit.AttackDistance)
                         {
@@ -97,7 +108,7 @@ namespace Example.Systems
                         else if (unit.NextRepath <= 0)
                         {
                             unit.NextRepath = 2f;
-                            NavAgentSystem.SetDestinationStatic (entities[id], agent, positions[unit.TargetIndex].Value);
+                            needsPathfinding.Enqueue(new PathfindingInfo { Entity = entities[id], Agent = agent, Destination = positions[unit.TargetIndex].Value });
                         }
                         else if (agent.totalWaypoints == 0)
                         {
@@ -111,12 +122,12 @@ namespace Example.Systems
                         agent.nextWaypointIndex = 0;
                         unit.AttackDurationTimer -= dt;
                         var heading = positions[unit.TargetIndex].Value - positions[id].Value;
-                        if (math.length (heading) > 0.01f)
-                            agent.rotation = Quaternion.LookRotation (heading, Vector3.up);
+                        if (math.length(heading) > 0.01f)
+                            agent.rotation = Quaternion.LookRotation(heading, Vector3.up);
                         if (unit.AttackDurationTimer <= unit.AttackDuration / 2 && unit.HitSent == 0)
                         {
                             unit.HitSent = 1;
-                            sendDamage.Enqueue (new DamageInfo { Index = unit.TargetIndex, Damage = unit.Damage });
+                            sendDamage.Enqueue(new DamageInfo { Index = unit.TargetIndex, Damage = unit.Damage });
                         }
                         if (unit.AttackDurationTimer <= 0)
                         {
@@ -165,8 +176,8 @@ namespace Example.Systems
                         {
                             unit.State = UnitState.Dead;
                             animation.SetFrame = unit.DeadOffset;
-                            buffer.RemoveComponent<NavAgent> (entities[id]);
-                            buffer.AddComponent<IsDead> (entities[id], new IsDead ());
+                            buffer.RemoveComponent<NavAgent>(entities[id]);
+                            buffer.AddComponent<IsDead>(entities[id], new IsDead());
                         }
                         break;
                 }
@@ -189,12 +200,13 @@ namespace Example.Systems
 
         [Inject] InjectionData data;
         [Inject] SetTargetSystemBarrier barrier;
-        protected override JobHandle OnUpdate (JobHandle inputDeps)
+        [Inject] NavAgentSystem navAgentSystem;
+        protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
             if (ExampleBootstrap.IsSpawning) return inputDeps;
-            var buffer = barrier.CreateCommandBuffer ();
+            var buffer = barrier.CreateCommandBuffer();
             int h = 0;
-            while (sendDamage.TryDequeue (out DamageInfo info))
+            while (sendDamage.TryDequeue(out DamageInfo info))
             {
                 if (info.Index < data.Length)
                 {
@@ -214,28 +226,39 @@ namespace Example.Systems
                 h++;
                 if (h > 1000)
                 {
-                    Debug.LogError ("asal ni?? 3");
+                    break;
+                }
+            }
+            h = 0;
+            while (needsPathfinding.TryDequeue(out PathfindingInfo info))
+            {
+                navAgentSystem.SetDestination(info.Entity, info.Agent, info.Destination);
+                h++;
+                if (h > 1000)
+                {
                     break;
                 }
             }
             var dt = Time.deltaTime;
-            var setTargetJob = new SetTargetJob (dt, buffer, sendDamage, data.entities, data.agents, data.animations, data.positions, data.units).Schedule (data.Length, 64, inputDeps);
+            var setTargetJob = new SetTargetJob(dt, buffer, sendDamage, needsPathfinding, data.entities, data.agents, data.animations, data.positions, data.units).Schedule(data.Length, 64, inputDeps);
             return setTargetJob;
         }
 
-        protected override void OnCreateManager (int capacity)
+        protected override void OnCreateManager(int capacity)
         {
-            sendDamage = new NativeQueue<DamageInfo> (Allocator.Persistent);
+            sendDamage = new NativeQueue<DamageInfo>(Allocator.Persistent);
+            needsPathfinding = new NativeQueue<PathfindingInfo>(Allocator.Persistent);
         }
 
-        protected override void OnDestroyManager ()
+        protected override void OnDestroyManager()
         {
-            sendDamage.Dispose ();
+            sendDamage.Dispose();
+            needsPathfinding.Dispose();
         }
 
-        protected override void OnStartRunning () { }
+        protected override void OnStartRunning() { }
 
-        protected override void OnStopRunning () { }
+        protected override void OnStopRunning() { }
     }
 
     public class SetTargetSystemBarrier : BarrierSystem { }

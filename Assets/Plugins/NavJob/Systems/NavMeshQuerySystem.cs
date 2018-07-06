@@ -26,17 +26,17 @@ namespace NavJob.Systems
         /// <summary>
         /// How many navmesh queries are run on each update.
         /// </summary>
-        public int MaxQueries = 128;
+        public int MaxQueries = 16;
 
         /// <summary>
         /// Maximum path size of each query
         /// </summary>
-        public int MaxPathSize = 1024;
+        public int MaxPathSize = 128;
 
         /// <summary>
         /// Maximum iteration on each update cycle
         /// </summary>
-        public int MaxIterations = 1024;
+        public int MaxIterations = 256;
 
         /// <summary>
         /// Max map width
@@ -394,8 +394,8 @@ namespace NavJob.Systems
         {
             world = NavMeshWorld.GetDefaultWorld ();
             locationQuery = new NavMeshQuery (world, Allocator.Persistent);
-            ProgressQueue = new NativeList<PathQueryData> (MaxQueries, Allocator.Persistent);
             availableSlots = new ConcurrentQueue<int> ();
+            ProgressQueue = new NativeList<PathQueryData> (MaxQueries, Allocator.Persistent);
             handles = new List<JobHandle> (MaxQueries);
             takenSlots = new List<int> (MaxQueries);
             statuses = new List<NativeArray<int>> (MaxQueries);

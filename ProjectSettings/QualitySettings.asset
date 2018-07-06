@@ -180,7 +180,7 @@ QualitySettings:
     name: Fantastic
     pixelLightCount: 4
     shadows: 2
-    shadowResolution: 3
+    shadowResolution: 1
     shadowProjection: 0
     shadowCascades: 2
     shadowDistance: 150

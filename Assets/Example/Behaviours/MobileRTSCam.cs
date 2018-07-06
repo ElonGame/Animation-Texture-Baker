@@ -22,19 +22,20 @@ using UnityEngine.UI;
 /// 				  - prevent camera shaking while touch after drag
 ///                   v1.0 (2016-02-15)
 ///-----------------------------------------------------------------------------------------
-namespace BE
+
+namespace Example.Behaviours
 {
 
 	public interface MobileRTSCamListner
 	{
-		void OnTouchDown (Ray ray);
-		void OnTouchUp (Ray ray);
-		void OnTouch (Ray ray);
-		void OnDragStart (Ray ray);
-		void OnDragEnd (Ray ray);
-		void OnDrag (Ray ray);
-		void OnLongPress (Ray ray);
-		void OnMouseWheel (float fValue);
+		void OnTouchDown(Ray ray);
+		void OnTouchUp(Ray ray);
+		void OnTouch(Ray ray);
+		void OnDragStart(Ray ray);
+		void OnDragEnd(Ray ray);
+		void OnDrag(Ray ray);
+		void OnLongPress(Ray ray);
+		void OnMouseWheel(float fValue);
 	}
 
 	public enum PinchType
@@ -132,23 +133,23 @@ namespace BE
 		public float fDragCheckMin = 0.1f;
 		public float fInertiaCheckMin = 0.1f;
 
-		void Awake ()
+		void Awake()
 		{
 			instance = this;
-			trCamera = transform.Find ("Main Camera").transform;
+			trCamera = transform.Find("Main Camera").transform;
 			trCameraRoot = transform;
 			//gr = GameObject.Find ("Canvas").GetComponent<GraphicRaycaster>();
-			xzPlane = new Plane (new Vector3 (0f, 1f, 0f), 0f); // set base plane to xzplane with height zero
-			camMain = trCamera.GetComponent<Camera> ();
+			xzPlane = new Plane(new Vector3(0f, 1f, 0f), 0f); // set base plane to xzplane with height zero
+			camMain = trCamera.GetComponent<Camera>();
 			zoomCurrent = -trCamera.localPosition.z;
 		}
 
-		void Start ()
+		void Start()
 		{
 
 		}
 
-		void Update ()
+		void Update()
 		{
 
 			//inertia camera panning
@@ -156,8 +157,8 @@ namespace BE
 			{
 				if (InertiaActive && (InertiaSpeed.magnitude > fInertiaCheckMin))
 				{
-					SetCameraPosition (trCameraRoot.position - InertiaSpeed);
-					InertiaSpeed = Vector3.Lerp (InertiaSpeed, Vector3.zero, InertiaAge);
+					SetCameraPosition(trCameraRoot.position - InertiaSpeed);
+					InertiaSpeed = Vector3.Lerp(InertiaSpeed, Vector3.zero, InertiaAge);
 					InertiaAge += Time.smoothDeltaTime;
 				}
 				else
@@ -182,20 +183,20 @@ namespace BE
 			}
 
 			Vector3 vTouch = Input.mousePosition;
-			ray = Camera.main.ScreenPointToRay (vTouch);
+			ray = Camera.main.ScreenPointToRay(vTouch);
 			float enter;
 
 			//if left MouseButton down
-			if (Input.GetMouseButton (0))
+			if (Input.GetMouseButton(0))
 			{
 
-				if (EventSystem.current && EventSystem.current.IsPointerOverGameObject ())
+				if (EventSystem.current && EventSystem.current.IsPointerOverGameObject())
 				{
 					//Debug.Log("left-click over a GUI element!");
 					return;
 				}
 
-				if (Input.GetKey (KeyCode.LeftShift))
+				if (Input.GetKey(KeyCode.LeftShift))
 				{
 					//Debug.Log ("left shift key is held down");
 
@@ -208,14 +209,14 @@ namespace BE
 					}
 					else
 					{
-						if (Vector3.Distance (vTouch, vEDMouseStart) > fDragCheckMin)
+						if (Vector3.Distance(vTouch, vEDMouseStart) > fDragCheckMin)
 						{
 							//Debug.Log ("change rotation start vTouch:"+vTouch+" vEDMouseStart:"+vEDMouseStart+" vEDCamRootRotStart:"+vEDCamRootRotStart);
 							vEDMouseMove = vTouch - vEDMouseStart;
 							if (UseXRotation)
 							{
 								vEDCamRootRot.x = vEDCamRootRotStart.x - vEDMouseMove.y * 0.1f;
-								vEDCamRootRot.x = Mathf.Clamp (vEDCamRootRot.x, 10.0f, 90.0f);
+								vEDCamRootRot.x = Mathf.Clamp(vEDCamRootRot.x, 10.0f, 90.0f);
 							}
 							else
 							{
@@ -230,7 +231,7 @@ namespace BE
 								vEDCamRootRot.y = vEDCamRootRotStart.y;
 							}
 							vEDCamRootRot.z = 0;
-							trCameraRoot.localRotation = Quaternion.Euler (vEDCamRootRot);
+							trCameraRoot.localRotation = Quaternion.Euler(vEDCamRootRot);
 							//Debug.Log ("change rotation : "+vEDCamRootRot);
 						}
 					}
@@ -240,7 +241,7 @@ namespace BE
 					vEDInRotation = false;
 				}
 
-				xzPlane.Raycast (ray, out enter);
+				xzPlane.Raycast(ray, out enter);
 
 				if (!bInTouch)
 				{
@@ -252,11 +253,11 @@ namespace BE
 					mousePosPrev = mousePosStart = vTouch;
 
 					if (Listner != null)
-						Listner.OnTouchDown (ray);
+						Listner.OnTouchDown(ray);
 
 					// Get Picking Position
-					xzPlane.Raycast (ray, out enter);
-					vPickStart = ray.GetPoint (enter) - trCameraRoot.position;
+					xzPlane.Raycast(ray, out enter);
+					vPickStart = ray.GetPoint(enter) - trCameraRoot.position;
 					vPickOld = vPickStart;
 					vCamRootPosOld = trCameraRoot.position;
 
@@ -275,7 +276,7 @@ namespace BE
 					{
 
 						//Mouse Button is in pressed & mouse move certain diatance
-						if (Vector3.Distance (vTouch, mousePosStart) > fDragCheckMin)
+						if (Vector3.Distance(vTouch, mousePosStart) > fDragCheckMin)
 						{
 
 							// set drag flag on
@@ -283,27 +284,27 @@ namespace BE
 							{
 								Dragged = true;
 
-								if (Listner != null) Listner.OnDragStart (ray);
+								if (Listner != null) Listner.OnDragStart(ray);
 							}
 
-							if (!Input.GetKey (KeyCode.LeftShift))
+							if (!Input.GetKey(KeyCode.LeftShift))
 							{
 								// prevent camera shaking while touch pressed after drag.
-								if (Vector3.Distance (vTouch, mousePosPrev) > fDragCheckMin)
+								if (Vector3.Distance(vTouch, mousePosPrev) > fDragCheckMin)
 								{
 
-									if (Listner != null) Listner.OnDrag (ray);
+									if (Listner != null) Listner.OnDrag(ray);
 
 									if (camPanningUse)
 									{
-										Vector3 vPickNew = ray.GetPoint (enter) - trCameraRoot.position;
+										Vector3 vPickNew = ray.GetPoint(enter) - trCameraRoot.position;
 										if (InertiaUse)
 										{
 											InertiaSpeed = 0.3f * InertiaSpeed + 0.7f * (vPickNew - vPickOld);
 										}
 										vCameraPanDir = vPickNew - vPickStart;
 										//Debug.Log ("vCameraPanDir:"+vCameraPanDir);
-										SetCameraPosition (vCamRootPosOld - vCameraPanDir);
+										SetCameraPosition(vCamRootPosOld - vCameraPanDir);
 										vPickOld = vPickNew;
 									}
 								}
@@ -316,11 +317,11 @@ namespace BE
 							if (Dragged)
 							{
 
-								if (Listner != null) Listner.OnDrag (ray);
+								if (Listner != null) Listner.OnDrag(ray);
 
 								if (camPanningUse)
 								{
-									Vector3 vPickNew = ray.GetPoint (enter) - trCameraRoot.position;
+									Vector3 vPickNew = ray.GetPoint(enter) - trCameraRoot.position;
 									if (InertiaUse)
 									{
 										InertiaSpeed = 0.3f * InertiaSpeed + 0.7f * (vPickNew - vPickOld);
@@ -337,7 +338,7 @@ namespace BE
 									if (LongTabCheck && (ClickAfter > LongTabPeriod))
 									{
 										LongTabCheck = false;
-										if (Listner != null) Listner.OnLongPress (ray);
+										if (Listner != null) Listner.OnLongPress(ray);
 									}
 								}
 							}
@@ -361,7 +362,7 @@ namespace BE
 					bInTouch = false;
 					//gr.enabled = true;
 
-					if (Listner != null) Listner.OnTouchUp (ray);
+					if (Listner != null) Listner.OnTouchUp(ray);
 
 					// if in drag state
 					if (Dragged)
@@ -370,34 +371,34 @@ namespace BE
 						if (InertiaUse && (InertiaSpeed.magnitude > fInertiaCheckMin))
 							InertiaActive = true;
 
-						if (Listner != null) Listner.OnDragEnd (ray);
+						if (Listner != null) Listner.OnDragEnd(ray);
 					}
 					else
 					{
-						if (Listner != null) Listner.OnTouch (ray);
+						if (Listner != null) Listner.OnTouch(ray);
 					}
 				}
 			}
 
 			//if (EventSystem.current && !EventSystem.current.IsPointerOverGameObject()) {
 			//zoom with mouse wheel
-			float fInputValue = Input.GetAxis ("Mouse ScrollWheel");
-			if (Listner != null) Listner.OnMouseWheel (fInputValue);
+			float fInputValue = Input.GetAxis("Mouse ScrollWheel");
+			if (Listner != null) Listner.OnMouseWheel(fInputValue);
 			if (fInputValue != 0.0f)
 			{
 
 				if (!InZoom)
 				{
 					mousePosStart = vTouch;
-					xzPlane.Raycast (ray, out enter);
-					vPickStart = ray.GetPoint (enter) - trCameraRoot.position;
+					xzPlane.Raycast(ray, out enter);
+					vPickStart = ray.GetPoint(enter) - trCameraRoot.position;
 					vCamRootPosOld = trCameraRoot.position;
 					InZoom = true;
 				}
 
 				float zoomDelta = fInputValue * zoomSpeed;
-				SetCameraZoom (zoomCurrent - zoomDelta);
-				UpjustPickPos (vTouch, vPickStart);
+				SetCameraZoom(zoomCurrent - zoomDelta);
+				UpjustPickPos(vTouch, vPickStart);
 			}
 			else
 			{
@@ -410,17 +411,17 @@ namespace BE
 			if (Input.touchCount != 2)
 				return;
 
-			Touch touchZero = Input.GetTouch (0);
-			Touch touchOne = Input.GetTouch (1);
+			Touch touchZero = Input.GetTouch(0);
+			Touch touchOne = Input.GetTouch(1);
 
 			Vector3 vPinchDir = touchOne.position - touchZero.position;
 			float fPinchDistance = vPinchDir.magnitude;
-			vPinchDir.Normalize ();
+			vPinchDir.Normalize();
 
 			Vector3 vPinchTouchCenter = (touchOne.position - touchZero.position) * 0.5f + touchZero.position;
-			ray = Camera.main.ScreenPointToRay (vPinchTouchCenter);
-			xzPlane.Raycast (ray, out enter);
-			Vector3 vPinchPickCenter = ray.GetPoint (enter) - trCameraRoot.position;
+			ray = Camera.main.ScreenPointToRay(vPinchTouchCenter);
+			xzPlane.Raycast(ray, out enter);
+			Vector3 vPinchPickCenter = ray.GetPoint(enter) - trCameraRoot.position;
 
 			if (!InPinch)
 			{
@@ -445,8 +446,8 @@ namespace BE
 				if ((vTouchZeroDelta.magnitude > 1.0f) && (vTouchOneDelta.magnitude > 1.0f))
 				{
 
-					float angleWithUp = Vector2.Angle (vTouchOneDelta, Vector2.up);
-					float angleBetweenTouches = Vector2.Angle (vTouchZeroDelta, vTouchOneDelta);
+					float angleWithUp = Vector2.Angle(vTouchOneDelta, Vector2.up);
+					float angleBetweenTouches = Vector2.Angle(vTouchZeroDelta, vTouchOneDelta);
 					//Debug.Log ("angleWithUp:"+angleWithUp+"angleBetweenTouches:"+angleBetweenTouches);
 
 					// check if pinch up
@@ -470,16 +471,16 @@ namespace BE
 					{
 						//rotate x
 						float fDelta = touchZero.deltaPosition.y * Time.deltaTime * 10.0f;
-						vCamRootRot.x = Mathf.Clamp (vCamRootRot.x - fDelta, 10.0f, 90.0f);
-						trCameraRoot.localRotation = Quaternion.Euler (vCamRootRot);
-						Debug.Log ("change rotation 1");
+						vCamRootRot.x = Mathf.Clamp(vCamRootRot.x - fDelta, 10.0f, 90.0f);
+						trCameraRoot.localRotation = Quaternion.Euler(vCamRootRot);
+						Debug.Log("change rotation 1");
 					}
 				}
 				else
 				{
 					//zoom
 					float fDelta = fPinchDistance - fPinchDistanceStart;
-					SetCameraZoom (ZoomStart - fDelta * zoomSpeed * 0.05f);
+					SetCameraZoom(ZoomStart - fDelta * zoomSpeed * 0.05f);
 
 					if (UseYRotation)
 					{
@@ -488,38 +489,38 @@ namespace BE
 						Vector3 v2 = vPinchDir;
 						float dot = v1.x * v2.x + v1.y * v2.y; //# dot product
 						float det = v1.x * v2.y - v1.y * v2.x; // # determinant
-						float angle = Mathf.Atan2 (det, dot); //# atan2(y, x) or atan2(sin, cos)
+						float angle = Mathf.Atan2(det, dot); //# atan2(y, x) or atan2(sin, cos)
 						angle *= Mathf.Rad2Deg;
 
 						vCamRootRot.y = vCamRootRotStart.y + angle;
-						trCameraRoot.localRotation = Quaternion.Euler (vCamRootRot);
-						Debug.Log ("change rotation 2");
+						trCameraRoot.localRotation = Quaternion.Euler(vCamRootRot);
+						Debug.Log("change rotation 2");
 					}
 				}
 
 				if ((pinchType == PinchType.Zoom) || (pinchType == PinchType.Rotate))
 				{
-					UpjustPickPos (vPinchTouchCenter, vPinchPickCenterStart);
+					UpjustPickPos(vPinchTouchCenter, vPinchPickCenterStart);
 				}
 			}
 		}
 
-		public void UpjustPickPos (Vector3 vTouch, Vector3 vPickStart)
+		public void UpjustPickPos(Vector3 vTouch, Vector3 vPickStart)
 		{
-			Ray ray = Camera.main.ScreenPointToRay (vTouch);
+			Ray ray = Camera.main.ScreenPointToRay(vTouch);
 			float enter;
-			xzPlane.Raycast (ray, out enter);
-			Vector3 vPickNew = ray.GetPoint (enter) - trCameraRoot.position;
+			xzPlane.Raycast(ray, out enter);
+			Vector3 vPickNew = ray.GetPoint(enter) - trCameraRoot.position;
 			vCameraPanDir = vPickNew - vPickStart;
-			SetCameraPosition (vCamRootPosOld - vCameraPanDir);
+			SetCameraPosition(vCamRootPosOld - vCameraPanDir);
 		}
 
-		public void SetCameraPosition (Vector3 vPos)
+		public void SetCameraPosition(Vector3 vPos)
 		{
 			if (borderType == BorderType.Rect)
 			{
-				vPos.x = Mathf.Clamp (vPos.x, XMin, XMax);
-				vPos.z = Mathf.Clamp (vPos.z, ZMin, ZMax);
+				vPos.x = Mathf.Clamp(vPos.x, XMin, XMax);
+				vPos.z = Mathf.Clamp(vPos.z, ZMin, ZMax);
 			}
 			else if (borderType == BorderType.Circle)
 			{
@@ -528,7 +529,7 @@ namespace BE
 				float fLength = vDir.magnitude;
 				if (fLength > CircleBorderRadius)
 				{
-					vDir.Normalize ();
+					vDir.Normalize();
 					vPos = vDir * CircleBorderRadius;
 				}
 			}
@@ -537,40 +538,40 @@ namespace BE
 			trCameraRoot.position = vPos;
 		}
 
-		public void SetCameraZoom (float value)
+		public void SetCameraZoom(float value)
 		{
-			zoomCurrent = Mathf.Clamp (value, zoomMin, zoomMax);
+			zoomCurrent = Mathf.Clamp(value, zoomMin, zoomMax);
 			if (camMain.orthographic)
 			{
 				camMain.orthographicSize = zoomCurrent;
 			}
 			else
 			{
-				trCamera.localPosition = new Vector3 (0, 0, -zoomCurrent);
+				trCamera.localPosition = new Vector3(0, 0, -zoomCurrent);
 			}
 		}
 
 		// Set Zoom value with 0.0 ~ 1.0 ratio of min to max value
-		public void SetCameraZoomRatio (float fRatio)
+		public void SetCameraZoomRatio(float fRatio)
 		{
 			float fRealValue = (zoomMax - zoomMin) * fRatio + zoomMin;
-			SetCameraZoom (fRealValue);
+			SetCameraZoom(fRealValue);
 		}
 
-		void OnDrawGizmos ()
+		void OnDrawGizmos()
 		{
 			Gizmos.color = Color.red;
 
 			if (borderType == BorderType.Rect)
 			{
-				Gizmos.DrawLine (new Vector3 (XMin, 0, ZMin), new Vector3 (XMax, 0, ZMin));
-				Gizmos.DrawLine (new Vector3 (XMin, 0, ZMax), new Vector3 (XMax, 0, ZMax));
-				Gizmos.DrawLine (new Vector3 (XMin, 0, ZMin), new Vector3 (XMin, 0, ZMax));
-				Gizmos.DrawLine (new Vector3 (XMax, 0, ZMin), new Vector3 (XMax, 0, ZMax));
+				Gizmos.DrawLine(new Vector3(XMin, 0, ZMin), new Vector3(XMax, 0, ZMin));
+				Gizmos.DrawLine(new Vector3(XMin, 0, ZMax), new Vector3(XMax, 0, ZMax));
+				Gizmos.DrawLine(new Vector3(XMin, 0, ZMin), new Vector3(XMin, 0, ZMax));
+				Gizmos.DrawLine(new Vector3(XMax, 0, ZMin), new Vector3(XMax, 0, ZMax));
 			}
 			else if (borderType == BorderType.Circle)
 			{
-				Gizmos.DrawWireSphere (Vector3.zero, CircleBorderRadius);
+				Gizmos.DrawWireSphere(Vector3.zero, CircleBorderRadius);
 			}
 			else { }
 		}

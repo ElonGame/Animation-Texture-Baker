@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Entities;
 using UnityEngine;
+using Unity.Entities;
 
 namespace Animationbaker.Components
 {
@@ -13,16 +13,6 @@ namespace Animationbaker.Components
     }
 
     [System.Serializable]
-    [RequireComponent (typeof (GameObjectEntity))]
-    public class AnimatedComponent : SharedComponentDataWrapper<Animated>
-    {
-        // EntityManager manager;
-        // Entity entity;
-        // private void Start ()
-        // {
-        //     manager = GetComponent<GameObjectEntity> ().EntityManager;
-        //     entity = GetComponent<GameObjectEntity> ().Entity;
-        // }
-        // private void Update () { }
-    }
+    [RequireComponent(typeof(GameObjectEntity))]
+    public class AnimatedComponent : SharedComponentDataWrapper<Animated> { }
 }
