@@ -34,6 +34,7 @@ Material:
     - _AnimationFPS: 30
     - _AnimationFrameCount: 128
     - _CurrentAnimation: 0
+    - _PlaybackSpeed: 1.2
     - _TotalAnimations: 5
     - _TotalFrames: 1024
     m_Colors:

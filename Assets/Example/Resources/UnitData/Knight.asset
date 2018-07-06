@@ -21,5 +21,5 @@ MonoBehaviour:
   AttackDuration: 1
   AttackCooldown: 2
   HitCooldown: 0.3
-  DyingCooldown: 0.5
+  DyingCooldown: 0.4
   DeadOffset: 0.95
