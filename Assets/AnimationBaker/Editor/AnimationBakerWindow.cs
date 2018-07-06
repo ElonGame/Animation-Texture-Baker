@@ -21,6 +21,7 @@ namespace AnimationBaker
         SkinnedMeshRenderer meshRenderer;
         List<AnimationClip> clips = new List<AnimationClip>();
         List<bool> clipsImport = new List<bool>();
+        List<MeshFilter> boneMeshes = new List<MeshFilter>();
         Animation animation;
         AnimationClip idleAnimation
         {
@@ -99,9 +100,11 @@ namespace AnimationBaker
                 clips.Clear();
                 lastChosen = chosen;
                 rootBone = null;
+                boneMeshes.Clear();
                 if (meshRenderer = FindSkinnedMeshRenderer(chosen.transform))
                 {
                     rootBone = meshRenderer.rootBone;
+                    FindMeshInBones(boneMeshes, rootBone);
                 }
                 animation = FindAnimation(chosen.transform);
             }
@@ -166,6 +169,10 @@ namespace AnimationBaker
             {
                 EditorGUILayout.HelpBox("✔ Mesh scale will be adjusted to world space", MessageType.None);
             }
+            if (boneMeshes.Count > 0)
+            {
+                EditorGUILayout.HelpBox($"✔ Found {boneMeshes.Count} meshes on the bones.", MessageType.None);
+            }
 
             EditorGUILayout.LabelField("Bake (" + bakeClipsCount + ") Animations: Default " + idleAnimation?.name);
 
@@ -214,8 +221,11 @@ namespace AnimationBaker
             }
             var setDt = 1f / animationFps;
             var instance = Instantiate(chosen, Vector3.zero, Quaternion.identity);
-            var skinRenderer = FindSkinnedMeshRenderer(instance.transform);
-            var newAnimation = FindAnimation(instance.transform);
+            var instanceTransform = instance.transform;
+            var skinRenderer = FindSkinnedMeshRenderer(instanceTransform);
+            var newAnimation = FindAnimation(instanceTransform);
+            var boneMeshes = new List<MeshFilter>();
+            FindMeshInBones(boneMeshes, instanceTransform);
             var skinTransform = skinRenderer.transform;
             var oldMesh = skinRenderer.sharedMesh;
             Mesh newMesh = new Mesh();
@@ -298,13 +308,31 @@ namespace AnimationBaker
                             }
                             bounds.Encapsulate(point);
                         }
+                        foreach (var filter in boneMeshes)
+                        {
+                            var boneMesh = filter.sharedMesh;
+                            for (int k = 0; k < boneMesh.vertexCount; k++)
+                            {
+                                var point = filter.transform.TransformPoint(boneMesh.vertices[k]);
+                                bounds.Encapsulate(point);
+                            }
+                        }
                         boneScale = newMesh.bounds.size.y / bounds.size.y;
                         boneOffset.y = 0 - bounds.min.y;
                     }
-                    for (int k = 0; k < verticesCount; k++)
+                    for (int k = 0; k < animMesh.vertexCount; k++)
                     {
                         var vert = (skinTransform.TransformPoint(animMesh.vertices[k]) + boneOffset) * boneScale;
                         infoList.Add(new VertInfo { position = vert, normal = animMesh.normals[k] });
+                    }
+                    foreach (var filter in boneMeshes)
+                    {
+                        var mesh = filter.sharedMesh;
+                        for (int k = 0; k < mesh.vertexCount; k++)
+                        {
+                            var vert = (filter.transform.TransformPoint(mesh.vertices[k]) + boneOffset) * boneScale;
+                            infoList.Add(new VertInfo { position = vert, normal = mesh.normals[k] });
+                        }
                     }
                     time += frameRate;
                 }
@@ -390,10 +418,47 @@ namespace AnimationBaker
             {
                 newMesh.SetTriangles(oldMesh.GetTriangles(i).ToArray(), i);
             }
+            var offset = vertices.Count;
             newMesh.uv = oldMesh.uv.ToArray();
             newMesh.normals = oldMesh.normals.ToArray();
             newMesh.tangents = oldMesh.tangents.ToArray();
             newMesh.colors = oldMesh.colors.ToArray();
+            foreach (var filter in boneMeshes)
+            {
+                var boneMesh = filter.sharedMesh;
+                var newVerts = newMesh.vertices.ToList();
+                var newUv = newMesh.uv.ToList();
+                var newNormals = newMesh.normals.ToList();
+                var newTangents = newMesh.tangents.ToList();
+                var newColors = newMesh.colors.ToList();
+                var newTris = newMesh.triangles.ToList();
+
+                for (int i = 0; i < boneMesh.vertexCount; i++)
+                {
+                    newVerts.Add(filter.transform.TransformPoint(boneMesh.vertices[i]));
+                }
+                newMesh.vertices = newVerts.ToArray();
+
+                var boneTris = boneMesh.triangles.ToList();
+                for (int i = 0; i < boneTris.Count; i++)
+                {
+                    boneTris[i] = boneTris[i] + offset;
+                }
+                newTris.AddRange(boneTris);
+                newMesh.SetTriangles(newTris, 0);
+
+                newUv.AddRange(boneMesh.uv);
+                newNormals.AddRange(boneMesh.normals);
+                newTangents.AddRange(boneMesh.tangents);
+                newColors.AddRange(boneMesh.colors);
+
+                newMesh.uv = newUv.ToArray();
+                newMesh.normals = newNormals.ToArray();
+                newMesh.tangents = newTangents.ToArray();
+                newMesh.colors = newColors.ToArray();
+
+                offset += boneMesh.vertexCount;
+            }
             newMesh.RecalculateBounds();
             newMesh.MarkDynamic();
             return vertexOffset;
@@ -437,6 +502,19 @@ namespace AnimationBaker
                 return animator;
             }
             return null;
+        }
+
+        private void FindMeshInBones(List<MeshFilter> filters, Transform bone)
+        {
+            foreach (Transform child in bone)
+            {
+                FindMeshInBones(filters, child);
+            }
+            var filter = bone.GetComponent<MeshFilter>();
+            if (filter != null)
+            {
+                filters.Add(filter);
+            }
         }
 
         public struct VertInfo
