@@ -34,7 +34,7 @@ namespace Example
             var query = world.GetOrCreateManager<NavMeshQuerySystem>();
             world.GetOrCreateManager<AnimatedRendererSystem>();
             world.GetOrCreateManager<NavAgentToPositionSyncSystem>();
-            world.GetOrCreateManager<NavAgentAvoidanceSystem>();
+            world.GetOrCreateManager<RecycleDeadSystem>();
             var targetSystem = world.GetOrCreateManager<SetTargetSystem>();
             spawner = world.GetOrCreateManager<SpawnerSystem>();
             world.GetOrCreateManager<UpdateMatrixSystem>();
@@ -72,9 +72,9 @@ namespace Example
                         Material = unitData.Material,
                 });
             }
-            var caddy = GameObject.FindObjectOfType<MobileRTSCam>();
-            if (caddy)
-                spawner.PendingSpawn = 1000;
+            var spawnerData = GameObject.FindObjectOfType<Spawner>();
+            if (spawnerData)
+                spawner.PendingSpawn = spawnerData.InitialSpawn;
         }
 
         static void DomainUnloadShutdown()

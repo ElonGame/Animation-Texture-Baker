@@ -44,8 +44,9 @@ namespace Example.Systems
             [WriteOnly] public NativeQueue<DamageInfo>.Concurrent sendDamage;
             [WriteOnly] public NativeQueue<PathfindingInfo>.Concurrent needsPathfinding;
             [ReadOnly] float dt;
+            [ReadOnly] float time;
 
-            public SetTargetJob(float dt, EntityCommandBuffer buffer, NativeQueue<DamageInfo>.Concurrent sendDamage, NativeQueue<PathfindingInfo>.Concurrent needsPathfinding, EntityArray entities, ComponentDataArray<NavAgent> agents, ComponentDataArray<AnimatedState> animations, ComponentDataArray<Position> positions, ComponentDataArray<Unit> units)
+            public SetTargetJob(float dt, float time, EntityCommandBuffer buffer, NativeQueue<DamageInfo>.Concurrent sendDamage, NativeQueue<PathfindingInfo>.Concurrent needsPathfinding, EntityArray entities, ComponentDataArray<NavAgent> agents, ComponentDataArray<AnimatedState> animations, ComponentDataArray<Position> positions, ComponentDataArray<Unit> units)
             {
                 this.dt = dt;
                 this.animations = animations;
@@ -56,6 +57,7 @@ namespace Example.Systems
                 this.sendDamage = sendDamage;
                 this.needsPathfinding = needsPathfinding;
                 this.buffer = buffer;
+                this.time = time;
             }
 
             [BurstCompile]
@@ -88,7 +90,7 @@ namespace Example.Systems
                     case UnitState.Pathfinding:
                         if (agent.totalWaypoints > 0)
                         {
-                            animation.State = 1;
+                            animation.Clip = 1;
                             unit.State = UnitState.MoveInRange;
                             unit.NextRepath = 0.5f;
                         }
@@ -99,7 +101,7 @@ namespace Example.Systems
                         if (dist < unit.AttackDistance)
                         {
                             unit.AttackDurationTimer = unit.AttackDuration;
-                            animation.State = 2;
+                            animation.Clip = 2;
                             unit.State = UnitState.Attacking;
                             agent.totalWaypoints = 0;
                             agent.remainingDistance = 0;
@@ -112,7 +114,7 @@ namespace Example.Systems
                         }
                         else if (agent.totalWaypoints == 0)
                         {
-                            animation.State = 0;
+                            animation.Clip = 0;
                             unit.State = UnitState.FindTarget;
                         }
                         break;
@@ -122,8 +124,11 @@ namespace Example.Systems
                         agent.nextWaypointIndex = 0;
                         unit.AttackDurationTimer -= dt;
                         var heading = positions[unit.TargetIndex].Value - positions[id].Value;
-                        if (math.length(heading) > 0.01f)
-                            agent.rotation = Quaternion.LookRotation(heading, Vector3.up);
+                        if (math.length(heading) > 0.001f)
+                        {
+                            var rot = Quaternion.LookRotation(heading, Vector3.up);
+                            agent.rotation = Quaternion.Slerp(agent.rotation, rot, 0.5f);
+                        }
                         if (unit.AttackDurationTimer <= unit.AttackDuration / 2 && unit.HitSent == 0)
                         {
                             unit.HitSent = 1;
@@ -131,7 +136,7 @@ namespace Example.Systems
                         }
                         if (unit.AttackDurationTimer <= 0)
                         {
-                            animation.State = 0;
+                            animation.Clip = 0;
                             unit.AttackCooldownTimer = unit.AttackCooldown;
                             unit.State = UnitState.AttckCooldown;
                         }
@@ -141,12 +146,12 @@ namespace Example.Systems
                         unit.AttackCooldownTimer -= dt;
                         if (unit.AttackCooldownTimer <= 0)
                         {
-                            animation.State = 0;
+                            animation.Clip = 0;
                             unit.State = UnitState.MoveInRange;
                         }
                         break;
                     case UnitState.GotHit:
-                        animation.State = 3;
+                        animation.Clip = 3;
                         if (unit.HitCooldownTimer <= 0)
                             unit.HitCooldownTimer = unit.HitCooldown;
                         agent.totalWaypoints = 0;
@@ -158,7 +163,7 @@ namespace Example.Systems
                         unit.HitCooldownTimer -= dt;
                         if (unit.HitCooldownTimer <= 0)
                         {
-                            animation.State = 0;
+                            animation.Clip = 0;
                             unit.State = UnitState.MoveInRange;
                         }
                         break;
@@ -168,16 +173,16 @@ namespace Example.Systems
                         agent.nextWaypointIndex = 0;
                         unit.DyingCooldownTimer = unit.DyingCooldown;
                         unit.State = UnitState.DyingCooldown;
-                        animation.State = 4;
+                        animation.Clip = 4;
                         break;
                     case UnitState.DyingCooldown:
                         unit.DyingCooldownTimer -= dt;
                         if (unit.DyingCooldownTimer <= 0)
                         {
                             unit.State = UnitState.Dead;
-                            animation.SetFrame = unit.DeadOffset;
+                            animation.OverrideFrame = unit.DeadOffset;
                             buffer.RemoveComponent<NavAgent>(entities[id]);
-                            buffer.AddComponent<IsDead>(entities[id], new IsDead());
+                            buffer.AddComponent<IsDead>(entities[id], new IsDead { TimeOfDeath = time });
                         }
                         break;
                 }
@@ -239,7 +244,7 @@ namespace Example.Systems
                 }
             }
             var dt = Time.deltaTime;
-            var setTargetJob = new SetTargetJob(dt, buffer, sendDamage, needsPathfinding, data.entities, data.agents, data.animations, data.positions, data.units).Schedule(data.Length, 64, inputDeps);
+            var setTargetJob = new SetTargetJob(dt, Time.time, buffer, sendDamage, needsPathfinding, data.entities, data.agents, data.animations, data.positions, data.units).Schedule(data.Length, 64, inputDeps);
             return setTargetJob;
         }
 
