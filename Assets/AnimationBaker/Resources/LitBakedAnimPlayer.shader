@@ -45,14 +45,14 @@
 				float _TotalFrames;
 				float _AnimationFrameCount;
 				float _Clip;
-				float _Yoff;
+				// float _Yoff;
 
 				UNITY_INSTANCING_BUFFER_START(Props)
 					UNITY_DEFINE_INSTANCED_PROP(float, _CurrentAnimation)
 					UNITY_DEFINE_INSTANCED_PROP(float, _EntityID)
 				UNITY_INSTANCING_BUFFER_END(Props)
 
-				v2f vert (appdata_base v, uint vid : SV_VertexID, uint iid: SV_INSTANCEID)
+				v2f vert (appdata_base v, uint vid : SV_VertexID)
 				{
 					#include "GetPosNorm.cginc"
 					v2f o;
@@ -92,8 +92,7 @@
 
 				struct v2f {
 					V2F_SHADOW_CASTER;
-					UNITY_VERTEX_OUTPUT_STEREO
-                	UNITY_VERTEX_INPUT_INSTANCE_ID
+					float3 normal : TEXCOORD1;
 				};
 
 				sampler2D _MainTex, _PosTex, _NmlTex;
@@ -102,7 +101,7 @@
 				float _TotalFrames;
 				float _AnimationFrameCount;
 				float _Clip;
-				float _Yoff;
+				// float _Yoff;
 				
 				UNITY_INSTANCING_BUFFER_START(Props)
 					// UNITY_DEFINE_INSTANCED_PROP(float, _OverrideFrame)
@@ -110,12 +109,12 @@
 					UNITY_DEFINE_INSTANCED_PROP(float, _EntityID)
 				UNITY_INSTANCING_BUFFER_END(Props)
 
-				v2f vert( appdata_base v, uint vid : SV_VertexID, uint iid: SV_INSTANCEID)
+				v2f vert(appdata_base v, uint vid : SV_VertexID)
 				{
 					#include "GetPosNorm.cginc"
 					v2f o;
-					o.pos = pos;
-					v.normal = UnityObjectToWorldNormal(normal);
+					v.vertex = o.pos = pos + float4(0,0,0,1);
+					v.normal = o.normal = UnityObjectToWorldNormal(normal);
 					UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 					TRANSFER_SHADOW_CASTER_NORMALOFFSET(o)
 					return o;
