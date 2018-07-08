@@ -31,7 +31,6 @@ namespace AnimationBaker.StateMachine
 			AnimationClips.Add(new ClipData { Node = node });
 #if UNITY_EDITOR
 			AssetDatabase.SaveAssets();
-			AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
 			RefreshWindow();
 #endif
 			Selection.activeObject = this;
@@ -47,24 +46,13 @@ namespace AnimationBaker.StateMachine
 				RemoveNode(clip.Node);
 				AssetDatabase.SaveAssets();
 			}
-			AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
 			RefreshWindow();
-			// AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
-			// EditorUtility.SetDirty(this);
 #endif
 			AnimationClips.Remove(clip);
 			Selection.activeObject = this;
 		}
 
-		private void RefreshWindow()
-		{
-#if UNITY_EDITOR
-			Type win = typeof(EditorWindow).Assembly.GetType("XNodeEditor.NodeEditorWindow");
-			Debug.Log(win);
-			if (win != null)
-				EditorWindow.GetWindow(win.GetType()).Repaint();
-#endif
-		}
+		private void RefreshWindow() { }
 	}
 
 	[System.Serializable]

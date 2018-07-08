@@ -15,10 +15,7 @@ MonoBehaviour:
   - {fileID: 114850609646281298}
   - {fileID: 114469710237670172}
   Prefab: {fileID: 100052, guid: 3a2e2aa2beaff834aaaeb457f69fad9e, type: 3}
-  AnimationClips:
-  - Node: {fileID: 0}
-    Clip: {fileID: 7400002, guid: cc75faba6cca3bf40a96523bb4096e1d, type: 3}
-    WrapMode: 1
+  AnimationClips: []
   MachineVariables:
   - Name: IsHit
     VariableType: 3
@@ -40,7 +37,7 @@ MonoBehaviour:
   m_Name: End Node
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -24, y: -88}
+  position: {x: -72, y: -104}
   ports:
     keys:
     - enter
@@ -69,7 +66,7 @@ MonoBehaviour:
   m_Name: Start Node
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -888, y: -120}
+  position: {x: -712, y: -104}
   ports:
     keys:
     - exit

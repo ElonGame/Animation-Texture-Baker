@@ -124,7 +124,8 @@ namespace AnimationBaker.Systems
 
         protected override void OnCreateManager(int capacity)
         {
-            randomWriteBuffer = new ComputeBuffer(1024 * 1024, 4 * 4, ComputeBufferType.Default);
+            // capacity for 262K animated objects
+            randomWriteBuffer = new ComputeBuffer(512 * 512, 4 * 4, ComputeBufferType.Default);
         }
 
         protected override void OnDestroyManager()
