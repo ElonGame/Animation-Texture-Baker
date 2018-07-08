@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEditor;
+using XNodeEditor;
 
 namespace AnimationBaker.StateMachine.Editor
 {
@@ -40,7 +41,10 @@ namespace AnimationBaker.StateMachine.Editor
             addVariableRect.height = 18;
             if (GUI.Button(addVariableRect, "Add", EditorStyles.miniButton))
             {
-                graph.AddNewClip();
+                var node = graph.AddNewClip();
+                AssetDatabase.AddObjectToAsset(node, graph);
+                if (NodeEditorPreferences.GetSettings().autoSave) AssetDatabase.SaveAssets();
+                Repaint();
                 EditorUtility.SetDirty(graph);
                 AssetDatabase.SaveAssets();
             }
@@ -58,6 +62,11 @@ namespace AnimationBaker.StateMachine.Editor
                     {
                         clip.WrapMode = clip.Clip.wrapMode;
                     }
+                }
+                if (GUILayout.Button(EditorGUIUtility.IconContent("audio mixer.png"), GUILayout.Width(20)))
+                {
+                    Selection.activeObject = clip.Node;
+                    return;
                 }
                 if (GUILayout.Button("-", GUILayout.Width(20)))
                 {

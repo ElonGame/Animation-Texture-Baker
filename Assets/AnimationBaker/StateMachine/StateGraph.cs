@@ -24,7 +24,7 @@ namespace AnimationBaker.StateMachine
 		public List<ClipData> AnimationClips = new List<ClipData>();
 		public List<StateMachineVariables> MachineVariables = new List<StateMachineVariables>();
 
-		public void AddNewClip()
+		public StateNode AddNewClip()
 		{
 			var node = AddNode<StateNode>();
 			node.name = "Unnamed " + UnityEngine.Random.Range(0, 999);
@@ -35,6 +35,7 @@ namespace AnimationBaker.StateMachine
 			RefreshWindow();
 #endif
 			Selection.activeObject = this;
+			return node;
 		}
 
 		public void RemoveClip(ClipData clip)
@@ -42,8 +43,9 @@ namespace AnimationBaker.StateMachine
 #if UNITY_EDITOR
 			if (clip.Node)
 			{
+				UnityEngine.Object.DestroyImmediate(clip.Node, true);
 				RemoveNode(clip.Node);
-				DestroyImmediate(clip.Node);
+				AssetDatabase.SaveAssets();
 			}
 			AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
 			RefreshWindow();
