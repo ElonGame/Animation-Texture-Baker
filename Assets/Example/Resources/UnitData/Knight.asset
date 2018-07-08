@@ -11,7 +11,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b723a5a6106db6546a2dab72e7bf7335, type: 3}
   m_Name: Knight
   m_EditorClassIdentifier: 
-  Mesh: {fileID: 4300000, guid: 8a452b43142aa4340b1177a7d6746ca9, type: 2}
+  Mesh: {fileID: 4300000, guid: 69a30832a91e7ab448985ba4e6196856, type: 3}
   Material: {fileID: 2100000, guid: d068f9ea594ec6840a2e808af8c6a4b0, type: 2}
   Health: 200
   Damage: 20

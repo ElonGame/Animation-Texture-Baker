@@ -10,6 +10,7 @@ namespace Example.Behaviours
         public float Health;
         public float Damage;
         public float AttackDistance;
+        public int AttackParticle;
         public float MoveSpeed;
         public int Faction;
         public float AttackDuration;

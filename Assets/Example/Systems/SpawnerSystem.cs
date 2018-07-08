@@ -43,6 +43,7 @@ namespace Example.Systems
                     CurrentHealth = unitData.Health,
                     Damage = unitData.Damage,
                     AttackDistance = unitData.AttackDistance,
+                    AttackParticle = unitData.AttackParticle,
                     MoveSpeed = unitData.MoveSpeed,
                     Faction = unitData.Faction,
                     AttackDuration = unitData.AttackDuration,

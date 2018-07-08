@@ -8,6 +8,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Transforms;
 using Animationbaker.Components;
+using Example.Behaviours;
 using Example.Components;
 using NavJob.Components;
 using NavJob.Systems;
@@ -18,12 +19,23 @@ namespace Example.Systems
     public class SetTargetSystem : JobComponentSystem
     {
         NativeQueue<DamageInfo> sendDamage;
+        NativeQueue<ParticleInfo> createParticle;
         NativeQueue<PathfindingInfo> needsPathfinding;
+        Spawner spawner;
 
         struct DamageInfo
         {
             public int Index;
             public float Damage;
+        }
+
+        struct ParticleInfo
+        {
+            public int Index;
+            public int TargetId;
+            public int AgentId;
+            public float HeadingUp;
+            public int AtTarget;
         }
 
         struct PathfindingInfo
@@ -42,11 +54,12 @@ namespace Example.Systems
             ComponentDataArray<Unit> units;
             [WriteOnly] EntityCommandBuffer.Concurrent buffer;
             [WriteOnly] public NativeQueue<DamageInfo>.Concurrent sendDamage;
+            [WriteOnly] public NativeQueue<ParticleInfo>.Concurrent createParticle;
             [WriteOnly] public NativeQueue<PathfindingInfo>.Concurrent needsPathfinding;
             [ReadOnly] float dt;
             [ReadOnly] float time;
 
-            public SetTargetJob(float dt, float time, EntityCommandBuffer buffer, NativeQueue<DamageInfo>.Concurrent sendDamage, NativeQueue<PathfindingInfo>.Concurrent needsPathfinding, EntityArray entities, ComponentDataArray<NavAgent> agents, ComponentDataArray<AnimatedState> animations, ComponentDataArray<Position> positions, ComponentDataArray<Unit> units)
+            public SetTargetJob(float dt, float time, EntityCommandBuffer buffer, NativeQueue<DamageInfo>.Concurrent sendDamage, NativeQueue<ParticleInfo>.Concurrent createParticle, NativeQueue<PathfindingInfo>.Concurrent needsPathfinding, EntityArray entities, ComponentDataArray<NavAgent> agents, ComponentDataArray<AnimatedState> animations, ComponentDataArray<Position> positions, ComponentDataArray<Unit> units)
             {
                 this.dt = dt;
                 this.animations = animations;
@@ -55,6 +68,7 @@ namespace Example.Systems
                 this.positions = positions;
                 this.units = units;
                 this.sendDamage = sendDamage;
+                this.createParticle = createParticle;
                 this.needsPathfinding = needsPathfinding;
                 this.buffer = buffer;
                 this.time = time;
@@ -106,6 +120,11 @@ namespace Example.Systems
                             agent.totalWaypoints = 0;
                             agent.remainingDistance = 0;
                             agent.nextWaypointIndex = 0;
+                            if (unit.AttackParticle != 0)
+                            {
+                                float3 pos = agent.position + (float3) ((agent.rotation * Vector3.back) + Vector3.up * 2);
+                                createParticle.Enqueue(new ParticleInfo { Index = unit.AttackParticle, TargetId = unit.TargetIndex, AgentId = id, HeadingUp = 2.5f, AtTarget = 0 });
+                            }
                         }
                         else if (unit.NextRepath <= 0)
                         {
@@ -129,20 +148,16 @@ namespace Example.Systems
                             var rot = Quaternion.LookRotation(heading, Vector3.up);
                             agent.rotation = Quaternion.Slerp(agent.rotation, rot, 0.5f);
                         }
-                        if (unit.AttackDurationTimer <= unit.AttackDuration / 2 && unit.HitSent == 0)
-                        {
-                            unit.HitSent = 1;
-                            sendDamage.Enqueue(new DamageInfo { Index = unit.TargetIndex, Damage = unit.Damage });
-                        }
                         if (unit.AttackDurationTimer <= 0)
                         {
                             animation.Clip = 0;
+                            sendDamage.Enqueue(new DamageInfo { Index = unit.TargetIndex, Damage = unit.Damage });
+                            createParticle.Enqueue(new ParticleInfo { Index = 0, TargetId = unit.TargetIndex, AgentId = id, HeadingUp = 1.4f, AtTarget = 1 });
                             unit.AttackCooldownTimer = unit.AttackCooldown;
                             unit.State = UnitState.AttckCooldown;
                         }
                         break;
                     case UnitState.AttckCooldown:
-                        unit.HitSent = 0;
                         unit.AttackCooldownTimer -= dt;
                         if (unit.AttackCooldownTimer <= 0)
                         {
@@ -158,6 +173,7 @@ namespace Example.Systems
                         agent.remainingDistance = 0;
                         agent.nextWaypointIndex = 0;
                         unit.State = UnitState.HitCooldown;
+                        unit.AttackCooldownTimer = unit.AttackCooldown;
                         break;
                     case UnitState.HitCooldown:
                         unit.HitCooldownTimer -= dt;
@@ -214,6 +230,7 @@ namespace Example.Systems
             {
                 if (info.Index < data.Length)
                 {
+                    inputDeps.Complete();
                     var unit = data.units[info.Index];
                     unit.CurrentHealth -= info.Damage;
                     if (unit.CurrentHealth <= 0)
@@ -234,6 +251,31 @@ namespace Example.Systems
                 }
             }
             h = 0;
+            if (createParticle.Count > 0)
+            {
+                inputDeps.Complete();
+            }
+            while (createParticle.TryDequeue(out ParticleInfo info))
+            {
+                if (info.TargetId < data.Length && info.AgentId < data.Length)
+                {
+                    var to = data.agents[info.TargetId].position + new float3(0, info.HeadingUp, 0);
+                    var from = data.agents[info.AgentId].position + new float3(0, info.HeadingUp, 0);
+                    var position = data.agents[info.AgentId].position;
+                    if (info.AtTarget == 1)
+                    {
+                        position = data.agents[info.TargetId].position;
+                    }
+                    var rotation = Quaternion.LookRotation(to - from);
+                    GameObject.Instantiate(spawner.particles[info.Index], position + math.up(), rotation);
+                    h++;
+                    if (h > 1000)
+                    {
+                        break;
+                    }
+                }
+            }
+            h = 0;
             while (needsPathfinding.TryDequeue(out PathfindingInfo info))
             {
                 navAgentSystem.SetDestination(info.Entity, info.Agent, info.Destination);
@@ -244,12 +286,14 @@ namespace Example.Systems
                 }
             }
             var dt = Time.deltaTime;
-            var setTargetJob = new SetTargetJob(dt, Time.time, buffer, sendDamage, needsPathfinding, data.entities, data.agents, data.animations, data.positions, data.units).Schedule(data.Length, 64, inputDeps);
+            var setTargetJob = new SetTargetJob(dt, Time.time, buffer, sendDamage, createParticle, needsPathfinding, data.entities, data.agents, data.animations, data.positions, data.units).Schedule(data.Length, 64, inputDeps);
             return setTargetJob;
         }
 
         protected override void OnCreateManager(int capacity)
         {
+            spawner = GameObject.FindObjectOfType<Spawner>();
+            createParticle = new NativeQueue<ParticleInfo>(Allocator.Persistent);
             sendDamage = new NativeQueue<DamageInfo>(Allocator.Persistent);
             needsPathfinding = new NativeQueue<PathfindingInfo>(Allocator.Persistent);
         }
@@ -258,6 +302,7 @@ namespace Example.Systems
         {
             sendDamage.Dispose();
             needsPathfinding.Dispose();
+            createParticle.Dispose();
         }
 
         protected override void OnStartRunning() { }

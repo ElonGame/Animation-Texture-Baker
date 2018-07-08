@@ -16,10 +16,11 @@ MonoBehaviour:
   Health: 100
   Damage: 20
   AttackDistance: 10
+  AttackParticle: 3
   MoveSpeed: 1
   Faction: 1
   AttackDuration: 2.5
-  AttackCooldown: 15
+  AttackCooldown: 5
   HitCooldown: 0.3
   DyingCooldown: 1
   DeadOffset: 0.9999

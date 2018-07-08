@@ -10,6 +10,7 @@ namespace Example.Behaviours
 	{
 
 		public int InitialSpawn = 1000;
+		public GameObject[] particles = new GameObject[0];
 
 		public void Spawn(int quantity = 100)
 		{

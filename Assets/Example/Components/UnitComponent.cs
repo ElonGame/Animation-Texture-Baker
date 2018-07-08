@@ -1,5 +1,5 @@
-using Unity.Entities;
 using UnityEngine;
+using Unity.Entities;
 
 namespace Example.Components
 {
@@ -31,6 +31,7 @@ namespace Example.Components
         public float NextRepath;
         public int HitSent;
         public float AttackDuration;
+        public int AttackParticle;
         public float AttackDurationTimer;
         public float AttackCooldown;
         public float AttackCooldownTimer;
@@ -44,7 +45,7 @@ namespace Example.Components
     }
 
     [System.Serializable]
-    [RequireComponent (typeof (GameObjectEntity))]
+    [RequireComponent(typeof(GameObjectEntity))]
     public class UnitComponent : ComponentDataWrapper<Unit>
     {
         // EntityManager manager;
