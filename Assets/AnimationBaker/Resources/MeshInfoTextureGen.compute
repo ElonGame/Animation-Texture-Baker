@@ -4,6 +4,7 @@
 struct MeshInfo{
 	float3 position;
 	float3 normal;
+	float extra;
 };
 
 // Create a RenderTexture with enableRandomWrite flag and set it
@@ -18,6 +19,6 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 {
 	int index = id.y * VertCount + id.x;
 	MeshInfo info = Info[index];
-	OutPosition[id.xy] = float4(info.position, 1.0);
+	OutPosition[id.xy] = float4(info.position, info.extra);
 	OutNormal[id.xy] = float4(info.normal, 1.0);
 }

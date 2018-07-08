@@ -10,12 +10,6 @@ using Animationbaker.Components;
 
 namespace Animationbaker.Systems
 {
-
-    // [AlwaysUpdateSystem]
-    // [DisableAutoCreationAttribute]
-    // [UpdateBefore (typeof (SomeType))]
-    // [UpdateAfter (typeof (SomeType))]
-    // [ExecuteInEditMode]
     public class AnimatedRendererSystem : ComponentSystem
     {
 
@@ -32,7 +26,7 @@ namespace Animationbaker.Systems
         private float[] tempClipDatas = new float[1023];
         private float[] overrideFrameDatas = new float[1023];
 
-        private ComputeBuffer computeData;
+        ComputeBuffer randomWriteBuffer;
 
         struct InjectData
         {
@@ -49,13 +43,9 @@ namespace Animationbaker.Systems
             if (data.entities.Length != lastLength)
             {
                 RefreshCache();
-                Render();
             }
-            else
-            {
-                UpdateState();
-                Render();
-            }
+            UpdateState();
+            Render();
         }
 
         private void Render()
@@ -63,11 +53,10 @@ namespace Animationbaker.Systems
             foreach (var item in cachedAnimated)
             {
                 var hash = item.Key;
+                var animated = item.Value;
                 var matrices = matricesData[hash];
-                var animated = cachedAnimated[hash];
                 var entityIds = entityIndices[hash];
                 var clipData = clipDatas[hash];
-                var overrideFrameData = overrideFrames[hash];
                 var currentLength = matrices.Count;
                 var start = 0;
                 while (start < currentLength)
@@ -76,11 +65,8 @@ namespace Animationbaker.Systems
                     matrices.CopyTo(start, tempMatrices, 0, len);
                     entityIds.CopyTo(start, tempIndices, 0, len);
                     clipData.CopyTo(start, tempClipDatas, 0, len);
-                    overrideFrameData.CopyTo(start, overrideFrameDatas, 0, len);
                     block.SetFloatArray("_CurrentAnimation", tempClipDatas);
-                    block.SetFloatArray("_OverrideFrame", overrideFrameDatas);
                     block.SetFloatArray("_EntityID", tempIndices);
-                    block.SetBuffer("_RunningState", computeData);
                     Graphics.DrawMeshInstanced(animated.Mesh, 0, animated.Material, tempMatrices, len, block, ShadowCastingMode.On, true);
                     start += len;
                 }
@@ -116,8 +102,8 @@ namespace Animationbaker.Systems
         private void RefreshCache()
         {
             cachedAnimated.Clear();
-            matricesData.Clear();
             entityIndices.Clear();
+            matricesData.Clear();
             clipDatas.Clear();
             overrideFrames.Clear();
             for (int i = 0; i < data.entities.Length; i++)
@@ -133,11 +119,10 @@ namespace Animationbaker.Systems
                     entityIndices.Add(hash, new List<float>());
                     clipDatas.Add(hash, new List<float>());
                     overrideFrames.Add(hash, new List<float>());
+                    animated.Material.SetBuffer("_RandomWrite", randomWriteBuffer);
+                    Graphics.SetRandomWriteTarget(1, randomWriteBuffer);
                 }
                 var matrix = data.matrices[i].Value;
-                matricesData[hash].Add(new Matrix4x4(matrix.c0, matrix.c1, matrix.c2, matrix.c3));
-                clipDatas[hash].Add(state.Clip);
-                overrideFrames[hash].Add(state.OverrideFrame);
                 entityIndices[hash].Add(index);
                 state.AnimationHash = hash;
                 data.animatedStates[i] = state;
@@ -147,13 +132,13 @@ namespace Animationbaker.Systems
 
         protected override void OnCreateManager(int capacity)
         {
-            computeData = new ComputeBuffer(1024 * 1024, 2 * 4, ComputeBufferType.Default);
+            randomWriteBuffer = new ComputeBuffer(1024 * 1024, 4 * 4, ComputeBufferType.Default);
         }
 
         protected override void OnDestroyManager()
         {
             Graphics.ClearRandomWriteTargets();
-            computeData.Dispose();
+            randomWriteBuffer.Dispose();
         }
     }
 }

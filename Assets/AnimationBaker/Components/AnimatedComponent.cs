@@ -10,6 +10,10 @@ namespace Animationbaker.Components
     {
         public Mesh Mesh;
         public Material Material;
+        public override int GetHashCode()
+        {
+            return Mesh.GetHashCode() + Material.GetHashCode();
+        }
     }
 
     [System.Serializable]

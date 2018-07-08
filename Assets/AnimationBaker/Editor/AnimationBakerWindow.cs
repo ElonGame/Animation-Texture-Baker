@@ -12,8 +12,9 @@ namespace AnimationBaker
     {
         public ComputeShader infoTexGen;
         public Shader playShader;
+        // public RenderTexture randomWrite;
 
-        const float animationFps = 60;
+        // const float animationFps = 60;
 
         GameObject chosen;
         Transform chosenTransform;
@@ -217,9 +218,8 @@ namespace AnimationBaker
             }
             if (!playShader)
             {
-                playShader = (Shader) Resources.Load("BakedAnimPlayer", typeof(Shader));
+                playShader = (Shader) Resources.Load("LitBakedAnimPlayer", typeof(Shader));
             }
-            var setDt = 1f / animationFps;
             var instance = Instantiate(chosen, Vector3.zero, Quaternion.identity);
             var instanceTransform = instance.transform;
             var skinRenderer = FindSkinnedMeshRenderer(instanceTransform);
@@ -231,7 +231,6 @@ namespace AnimationBaker
             Mesh newMesh = new Mesh();
             var offset = PopulateMesh(newMesh, oldMesh, skinRenderer.transform);
             var verticesCount = newMesh.vertexCount;
-            var texWidth = Mathf.NextPowerOfTwo(verticesCount);
             var prefabPath = Utils.Combine(outputPath, chosen.name);
             var prefabDir = Utils.Combine(outputDir, chosen.name);
             if (!Directory.Exists(prefabDir))
@@ -239,70 +238,93 @@ namespace AnimationBaker
 
             // Save mesh
             AssetDatabase.CreateAsset(newMesh, prefabPath + "/" + chosen.name + "Mesh.asset");
-            var animMesh = new Mesh();
 
             var scale = Vector3.one;
             scale.x = 1 / rootBone.localScale.x;
             scale.y = 1 / rootBone.localScale.y;
             scale.z = 1 / rootBone.localScale.z;
 
-            var animationFrameCount = 0;
             var totalClips = 0;
+            var frames = new List<int>();
+            var frameDeltas = new List<float>();
+            var totalFrames = 0;
+            var finalClips = new List<AnimationClip>();
             for (int i = 0; i < clipsImport.Count; i++)
             {
                 if (clipsImport[i] == false) continue;
                 var clip = clips[i];
-                var frames = Mathf.NextPowerOfTwo((int) (clip.length / setDt));
-                if (frames > animationFrameCount)
-                {
-                    animationFrameCount = frames;
-                }
+                var delta = clip.frameRate * 0.001f;
+                var frame = Mathf.CeilToInt(clip.length / delta);
+                frames.Add(frame);
+                frameDeltas.Add(delta);
+                totalFrames += frame;
                 totalClips++;
+                finalClips.Add(clip);
             }
 
-            var texHeight = Mathf.NextPowerOfTwo(animationFrameCount * totalClips);
+            // to store metadata
+            totalFrames += 1;
 
-            var positionTexture = new Texture2D(texWidth, texHeight, TextureFormat.RGBAFloat, false, false);
-            positionTexture.wrapMode = TextureWrapMode.Clamp;
-            positionTexture.filterMode = FilterMode.Point;
-            var normalTexture = new Texture2D(texWidth, texHeight, TextureFormat.RGBAFloat, false, false);
-            normalTexture.wrapMode = TextureWrapMode.Clamp;
-            normalTexture.filterMode = FilterMode.Point;
+            var texHeight = Mathf.NextPowerOfTwo(totalFrames);
+            var texWidth = Mathf.NextPowerOfTwo(verticesCount);
 
-            var currentClip = 0;
+            // store first cell:
+            // total clips
+
+            // second cell and beyond:
+            // x: frame count
+            // y: 1 / framerate
+            // z: offset
+            // w: wrap mode:
+            //    0 play once the revert to default
+            //    1 play once the revert to default
+            //    2 loop
+            //    4 not implemented
+            //    8 play once then hold
+
+            var infoList = new List<VertInfo>();
+
+            int texOffset = 1;
+
+            // infoList.Add(new VertInfo { position = new Vector3(totalClips, 0, 0), normal = Vector3.zero });
+
+            for (int i = 0; i < frames.Count; i++)
+            {
+                infoList.Add(new VertInfo
+                {
+                    position = new Vector3(frames[i], finalClips[i].length, texOffset),
+                        normal = Vector3.zero,
+                        extra = (int) finalClips[i].wrapMode
+                });
+                texOffset += (int) frames[i];
+            }
+            for (int i = totalClips; i < verticesCount; i++)
+            {
+                infoList.Add(new VertInfo
+                {
+                    position = Vector3.zero, normal = Vector3.zero
+                });
+            }
+
             var boneOffset = Vector3.zero;
             var boneScale = 0f;
-
-            for (int i = 0; i < clipsImport.Count; i++)
+            var animMesh = new Mesh();
+            for (int i = 0; i < finalClips.Count; i++)
             {
-                if (clipsImport[i] == false) continue;
-                var clip = clips[i];
-                var frames = Mathf.NextPowerOfTwo((int) (clip.length / setDt));
-                var frameRate = clip.length / frames;
-                var time = 0f;
-                var infoList = new List<VertInfo>();
-
-                var positionsRenderTexture = new RenderTexture(texWidth, animationFrameCount, 0, RenderTextureFormat.ARGBFloat);
-                var normalRenderTexture = new RenderTexture(texWidth, animationFrameCount, 0, RenderTextureFormat.ARGBFloat);
-                foreach (var rt in new [] { positionsRenderTexture, normalRenderTexture })
+                var clip = finalClips[i];
+                var dt = 0f;
+                var len = 0;
+                while (dt < clip.length)
                 {
-                    rt.enableRandomWrite = true;
-                    rt.Create();
-                    RenderTexture.active = rt;
-                    GL.Clear(true, true, Color.clear);
-                }
-
-                for (var j = 0; j < animationFrameCount; j++)
-                {
-                    clip.SampleAnimation(instance, Mathf.Repeat(time, clip.length));
+                    clip.SampleAnimation(instance, Mathf.Clamp(dt, 0, clip.length));
                     skinRenderer.BakeMesh(animMesh);
                     if (boneScale == 0)
                     {
                         var bounds = new Bounds();
-                        for (int k = 0; k < animMesh.vertexCount; k++)
+                        for (int j = 0; j < animMesh.vertexCount; j++)
                         {
-                            var point = skinTransform.TransformPoint(animMesh.vertices[k]);
-                            if (k == 0)
+                            var point = skinTransform.TransformPoint(animMesh.vertices[j]);
+                            if (j == 0)
                             {
                                 bounds.center = point;
                             }
@@ -311,19 +333,20 @@ namespace AnimationBaker
                         foreach (var filter in boneMeshes)
                         {
                             var boneMesh = filter.sharedMesh;
-                            for (int k = 0; k < boneMesh.vertexCount; k++)
+                            for (int j = 0; j < boneMesh.vertexCount; j++)
                             {
-                                var point = filter.transform.TransformPoint(boneMesh.vertices[k]);
+                                var point = filter.transform.TransformPoint(boneMesh.vertices[j]);
                                 bounds.Encapsulate(point);
                             }
                         }
                         boneScale = newMesh.bounds.size.y / bounds.size.y;
                         boneOffset.y = 0 - bounds.min.y;
                     }
-                    for (int k = 0; k < animMesh.vertexCount; k++)
+
+                    for (int j = 0; j < animMesh.vertexCount; j++)
                     {
-                        var vert = (skinTransform.TransformPoint(animMesh.vertices[k]) + boneOffset) * boneScale;
-                        infoList.Add(new VertInfo { position = vert, normal = animMesh.normals[k] });
+                        var vert = (skinTransform.TransformPoint(animMesh.vertices[j]) + boneOffset) * boneScale;
+                        infoList.Add(new VertInfo { position = vert, normal = animMesh.normals[j] });
                     }
                     foreach (var filter in boneMeshes)
                     {
@@ -334,36 +357,59 @@ namespace AnimationBaker
                             infoList.Add(new VertInfo { position = vert, normal = mesh.normals[k] });
                         }
                     }
-                    time += frameRate;
+                    len++;
+                    dt += frameDeltas[i];
                 }
-                var buffer = new ComputeBuffer(infoList.Count, System.Runtime.InteropServices.Marshal.SizeOf(typeof(VertInfo)));
-                buffer.SetData(infoList.ToArray());
-
-                var kernel = infoTexGen.FindKernel("CSMain");
-                uint x, y, z;
-                infoTexGen.GetKernelThreadGroupSizes(kernel, out x, out y, out z);
-
-                infoTexGen.SetInt("VertCount", verticesCount);
-                infoTexGen.SetBuffer(kernel, "Info", buffer);
-                infoTexGen.SetTexture(kernel, "OutPosition", positionsRenderTexture);
-                infoTexGen.SetTexture(kernel, "OutNormal", normalRenderTexture);
-                infoTexGen.Dispatch(kernel, verticesCount / (int) x + 1, animationFrameCount / (int) y + 1, 1);
-
-                buffer.Release();
-
-                var posTex = RenderTextureToTexture2D.Convert(positionsRenderTexture);
-                var normTex = RenderTextureToTexture2D.Convert(normalRenderTexture);
-
-                Graphics.CopyTexture(posTex, 0, 0, 0, 0, texWidth, animationFrameCount, positionTexture, 0, 0, 0, currentClip * animationFrameCount);
-                Graphics.CopyTexture(normTex, 0, 0, 0, 0, texWidth, animationFrameCount, normalTexture, 0, 0, 0, currentClip * animationFrameCount);
-
-                positionsRenderTexture.Release();
-                normalRenderTexture.Release();
-                currentClip++;
             }
+
+            var positionsRenderTexture = new RenderTexture(texWidth, texHeight, 0, RenderTextureFormat.ARGBHalf);
+            var normalRenderTexture = new RenderTexture(texWidth, texHeight, 0, RenderTextureFormat.ARGBHalf);
+            var positionTexture = new Texture2D(texWidth, texHeight, TextureFormat.RGBAHalf, false, false);
+            positionTexture.wrapMode = TextureWrapMode.Clamp;
+            positionTexture.filterMode = FilterMode.Point;
+            var normalTexture = new Texture2D(texWidth, texHeight, TextureFormat.RGBAHalf, false, false);
+            normalTexture.wrapMode = TextureWrapMode.Clamp;
+            normalTexture.filterMode = FilterMode.Point;
+
+            foreach (var rt in new [] { positionsRenderTexture, normalRenderTexture })
+            {
+                rt.enableRandomWrite = true;
+                rt.Create();
+                RenderTexture.active = rt;
+                GL.Clear(true, true, Color.clear);
+            }
+
+            var buffer = new ComputeBuffer(infoList.Count, System.Runtime.InteropServices.Marshal.SizeOf(typeof(VertInfo)));
+            buffer.SetData(infoList.ToArray());
+
+            var kernel = infoTexGen.FindKernel("CSMain");
+            uint x, y, z;
+            infoTexGen.GetKernelThreadGroupSizes(kernel, out x, out y, out z);
+
+            infoTexGen.SetInt("VertCount", verticesCount);
+            infoTexGen.SetBuffer(kernel, "Info", buffer);
+            infoTexGen.SetTexture(kernel, "OutPosition", positionsRenderTexture);
+            infoTexGen.SetTexture(kernel, "OutNormal", normalRenderTexture);
+            infoTexGen.Dispatch(kernel, verticesCount / (int) x + 1, texHeight / (int) y + 1, 1);
+
+            var posTex = RenderTextureToTexture2D.Convert(positionsRenderTexture);
+            var normTex = RenderTextureToTexture2D.Convert(normalRenderTexture);
+
+            Graphics.CopyTexture(posTex, positionTexture);
+            Graphics.CopyTexture(normTex, normalTexture);
+
+            positionsRenderTexture.Release();
+            normalRenderTexture.Release();
+
+            buffer.Release();
 
             AssetDatabase.CreateAsset(positionTexture, Utils.Combine(prefabPath, "Positions.asset"));
             AssetDatabase.CreateAsset(normalTexture, Utils.Combine(prefabPath, "Normals.asset"));
+
+            // var pngData = positionTexture.EncodeToPNG();
+            // System.IO.File.WriteAllBytes(Utils.Combine(prefabPath, "DebugPositions.png"), pngData);
+
+            AssetDatabase.Refresh();
 
             var materials = new Material[skinRenderer.sharedMaterials.Length];
             for (int i = 0; i < skinRenderer.sharedMaterials.Length; i++)
@@ -374,11 +420,10 @@ namespace AnimationBaker
                 mat.SetColor("_Color", skinRenderer.sharedMaterials[i].color);
                 mat.SetTexture("_PosTex", positionTexture);
                 mat.SetTexture("_NmlTex", normalTexture);
-                mat.SetFloat("_Loop", 1f);
-                mat.SetFloat("_TotalFrames", texHeight);
-                mat.SetFloat("_AnimationFrameCount", animationFrameCount);
+                mat.SetFloat("_TexHeight", texHeight);
                 mat.SetFloat("_TotalAnimations", totalClips);
-                mat.EnableKeyword("ANIM_LOOP");
+                // mat.SetTexture("_RandomWrite", randomWrite);
+                // Graphics.SetRandomWriteTarget(1, randomWrite);
                 mat.enableInstancing = true;
                 AssetDatabase.CreateAsset(mat, prefabPath + "/" + mat.name + ".mat");
                 materials[i] = mat;
@@ -455,7 +500,8 @@ namespace AnimationBaker
                 newMesh.uv = newUv.ToArray();
                 newMesh.normals = newNormals.ToArray();
                 newMesh.tangents = newTangents.ToArray();
-                newMesh.colors = newColors.ToArray();
+                if (oldMesh.colors.Length > 0)
+                    newMesh.colors = newColors.ToArray();
 
                 offset += boneMesh.vertexCount;
             }
@@ -470,10 +516,6 @@ namespace AnimationBaker
             var clipImport = clipsImport[current];
             clips.RemoveAt(current);
             clipsImport.RemoveAt(current);
-            if (desired > current)
-            {
-                desired--;
-            }
             clips.Insert(desired, clip);
             clipsImport.Insert(desired, clipImport);
         }
@@ -521,6 +563,7 @@ namespace AnimationBaker
         {
             public Vector3 position;
             public Vector3 normal;
+            public float extra;
         }
     }
 }
