@@ -113,7 +113,7 @@
 				{
 					#include "GetPosNorm.cginc"
 					v2f o;
-					v.vertex = o.pos = pos + float4(0,0,0,1);
+					v.vertex = o.pos = pos;
 					v.normal = o.normal = UnityObjectToWorldNormal(normal);
 					UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 					TRANSFER_SHADOW_CASTER_NORMALOFFSET(o)

@@ -346,7 +346,7 @@ namespace AnimationBaker
                     for (int j = 0; j < animMesh.vertexCount; j++)
                     {
                         var vert = (skinTransform.TransformPoint(animMesh.vertices[j]) + boneOffset) * boneScale;
-                        infoList.Add(new VertInfo { position = vert, normal = animMesh.normals[j] });
+                        infoList.Add(new VertInfo { position = vert, normal = animMesh.normals[j], extra = 1 });
                     }
                     foreach (var filter in boneMeshes)
                     {
