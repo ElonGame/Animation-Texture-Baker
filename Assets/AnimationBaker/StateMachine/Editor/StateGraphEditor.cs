@@ -18,9 +18,16 @@ namespace AnimationBaker.StateMachine.Editor
             DrawVariables();
         }
 
-        private static void DrawPrefab()
+        private void DrawPrefab()
         {
             EditorGUILayout.LabelField("Prefab", EditorStyles.largeLabel);
+            GUILayout.Space(8);
+            graph.Prefab = (GameObject) EditorGUILayout.ObjectField(graph.Prefab, typeof(GameObject), false);
+            if (graph.Prefab != null && name != graph.Prefab.name)
+            {
+                name = graph.Prefab.name;
+                AssetDatabase.SaveAssets();
+            }
             GUILayout.Space(8);
         }
 

@@ -1,0 +1,110 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6cf40de361d327f429cd45de039d9fb6, type: 3}
+  m_Name: New State Machine
+  m_EditorClassIdentifier: 
+  nodes:
+  - {fileID: 114850609646281298}
+  - {fileID: 114469710237670172}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  Prefab: {fileID: 0}
+  AnimationClips:
+  - Node: {fileID: 0}
+    Clip: {fileID: 7400008, guid: 2232304ae88cb3e4783a7983a12cfc6e, type: 3}
+    WrapMode: 2
+  - Node: {fileID: 0}
+    Clip: {fileID: 7400002, guid: cc75faba6cca3bf40a96523bb4096e1d, type: 3}
+    WrapMode: 1
+  - Node: {fileID: 0}
+    Clip: {fileID: 7400022, guid: 3a2e2aa2beaff834aaaeb457f69fad9e, type: 3}
+    WrapMode: 1
+  - Node: {fileID: 0}
+    Clip: {fileID: 7400006, guid: 5ff9e2d76954cef49946357b3cdf22c4, type: 3}
+    WrapMode: 8
+  MachineVariables:
+  - Name: IsHit
+    VariableType: 3
+  - Name: Attack
+    VariableType: 3
+  - Name: CurrentSpeed
+    VariableType: 1
+  - Name: IsDead
+    VariableType: 2
+--- !u!114 &114469710237670172
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d0130d41888c1a48bb8d4cf1310976f, type: 3}
+  m_Name: End Node
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 8, y: -24}
+  ports:
+    keys:
+    - enter
+    values:
+    - _fieldName: enter
+      _node: {fileID: 114469710237670172}
+      _typeQualifiedName: AnimationBaker.StateMachine.Nodes.BaseNode+Empty, Assembly-CSharp,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      connections:
+      - fieldName: exit
+        node: {fileID: 0}
+        reroutePoints: []
+      - fieldName: exit
+        node: {fileID: 0}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _dynamic: 0
+  Rules: []
+  Duration: 0
+  Clip: {fileID: 0}
+  WrapMode: 0
+--- !u!114 &114850609646281298
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b14cea0540360349b44b01a32e15f28, type: 3}
+  m_Name: Start Node
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: -888, y: -104}
+  ports:
+    keys:
+    - exit
+    values:
+    - _fieldName: exit
+      _node: {fileID: 114850609646281298}
+      _typeQualifiedName: AnimationBaker.StateMachine.Nodes.BaseNode+Empty, Assembly-CSharp,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      connections:
+      - fieldName: enter
+        node: {fileID: 0}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 1
+      _dynamic: 0
+  Rules: []
+  Duration: 0
+  Clip: {fileID: 0}
+  WrapMode: 0

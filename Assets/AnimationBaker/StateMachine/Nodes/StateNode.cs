@@ -13,6 +13,7 @@ namespace AnimationBaker.StateMachine.Nodes
     public class StateNode : BaseNode
     {
         [Input(ShowBackingValue.Never, ConnectionType.Multiple)] public Empty enter;
+        [Output(ShowBackingValue.Never, ConnectionType.Multiple)] public Empty exit;
         public override bool CanAddOutput { get => true; }
         public override bool HasState { get => true; }
 

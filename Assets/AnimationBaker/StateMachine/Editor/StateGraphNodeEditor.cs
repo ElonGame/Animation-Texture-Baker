@@ -14,12 +14,12 @@ namespace AnimationBaker.StateMachine.Editor
 		/// </summary>
 		public override string GetNodeMenuName(System.Type type)
 		{
-			return null;
-			// if (type.Namespace == "AnimationBaker.StateMachine.Nodes")
-			// {
-			// 	return base.GetNodeMenuName(type).Replace("Animation Baker/State Machine/Nodes/", "");
-			// }
-			// else return null;
+			// return null;
+			if (type.Namespace == "AnimationBaker.StateMachine.Nodes")
+			{
+				return base.GetNodeMenuName(type).Replace("Animation Baker/State Machine/Nodes/", "");
+			}
+			else return null;
 		}
 	}
 }

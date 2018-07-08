@@ -10,7 +10,7 @@ namespace AnimationBaker.StateMachine.Nodes
     [NodeTint("#7c0000")]
     public class EndNode : BaseNode
     {
-        [Input(ShowBackingValue.Never, ConnectionType.Override)] public Empty enter;
+        [Input(ShowBackingValue.Never, ConnectionType.Multiple)] public Empty enter;
 
         public override NodeType NodeType
         {
