@@ -114,6 +114,7 @@
 				{
 					#include "GetPosNorm.cginc"
 					v2f o;
+					o.pos = pos;
 					v.vertex = pos;
 					v.normal = UnityObjectToWorldNormal(normal);
 					UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
