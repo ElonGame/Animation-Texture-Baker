@@ -4,7 +4,7 @@
 Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: Mage.0.Material
   m_Shader: {fileID: 4800000, guid: fc04a66df4ba07f41a996faff3513f94, type: 3}

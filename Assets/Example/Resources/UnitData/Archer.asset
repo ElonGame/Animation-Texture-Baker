@@ -3,7 +3,7 @@
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -16,6 +16,7 @@ MonoBehaviour:
   Health: 100
   Damage: 10
   AttackDistance: 5
+  AttackParticle: 0
   MoveSpeed: 3
   Faction: 0
   AttackDuration: 0.5
