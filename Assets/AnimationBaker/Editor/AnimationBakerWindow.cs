@@ -59,7 +59,7 @@ namespace AnimationBaker
         Transform rootBone;
         int totalClips = 0;
 
-        [MenuItem("Assets/Create/Baked Animation Character", false, 0)]
+        [MenuItem("Assets/Create/Animation Baker/Prefab", false, 0)]
         private static void ShowWindow()
         {
             var window = GetWindow<AnimationBakerWindow>("Baked Animation Character", true);

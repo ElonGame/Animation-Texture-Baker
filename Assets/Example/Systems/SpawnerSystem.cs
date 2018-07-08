@@ -1,7 +1,7 @@
 using UnityEngine;
 using Unity.Entities;
 using Unity.Jobs;
-using Animationbaker.Components;
+using AnimationBaker.Components;
 using Example.Components;
 using NavJob.Components;
 

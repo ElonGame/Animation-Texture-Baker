@@ -1,14 +1,14 @@
 using UnityEngine;
 using Unity.Entities;
 
-namespace Animationbaker.Components
+namespace AnimationBaker.Components
 {
     [System.Serializable]
     public struct AnimatedState : IComponentData
     {
         public int AnimationHash;
         public int Clip;
-        public float OverrideFrame;
+        public float Timeout;
     }
 
     [System.Serializable]

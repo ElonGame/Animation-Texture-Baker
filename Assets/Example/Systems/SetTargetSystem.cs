@@ -7,7 +7,7 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Transforms;
-using Animationbaker.Components;
+using AnimationBaker.Components;
 using Example.Behaviours;
 using Example.Components;
 using NavJob.Components;
@@ -196,7 +196,6 @@ namespace Example.Systems
                         if (unit.DyingCooldownTimer <= 0)
                         {
                             unit.State = UnitState.Dead;
-                            animation.OverrideFrame = unit.DeadOffset;
                             buffer.RemoveComponent<NavAgent>(entities[id]);
                             buffer.AddComponent<IsDead>(entities[id], new IsDead { TimeOfDeath = time });
                         }

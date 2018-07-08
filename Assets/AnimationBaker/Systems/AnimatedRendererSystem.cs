@@ -6,9 +6,9 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Transforms;
-using Animationbaker.Components;
+using AnimationBaker.Components;
 
-namespace Animationbaker.Systems
+namespace AnimationBaker.Systems
 {
     public class AnimatedRendererSystem : ComponentSystem
     {

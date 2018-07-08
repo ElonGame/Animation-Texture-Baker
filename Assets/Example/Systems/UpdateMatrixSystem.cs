@@ -4,7 +4,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Transforms;
-using Animationbaker.Systems;
+using AnimationBaker.Systems;
 using NavJob.Components;
 using NavJob.Systems;
 
