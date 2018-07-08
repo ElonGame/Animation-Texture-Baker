@@ -18,7 +18,6 @@ namespace AnimationBaker.Systems
         private Dictionary<int, List<Matrix4x4>> matricesData = new Dictionary<int, List<Matrix4x4>>();
         private Dictionary<int, List<float>> entityIndices = new Dictionary<int, List<float>>();
         private Dictionary<int, List<float>> clipDatas = new Dictionary<int, List<float>>();
-        private Dictionary<int, List<float>> overrideFrames = new Dictionary<int, List<float>>();
         private MaterialPropertyBlock block = new MaterialPropertyBlock();
 
         private Matrix4x4[] tempMatrices = new Matrix4x4[1023];
@@ -83,10 +82,6 @@ namespace AnimationBaker.Systems
             {
                 item.Value.Clear();
             }
-            foreach (var item in overrideFrames)
-            {
-                item.Value.Clear();
-            }
             for (int i = 0; i < data.entities.Length; i++)
             {
                 var matrix = data.matrices[i].Value;
@@ -94,7 +89,6 @@ namespace AnimationBaker.Systems
                 var hash = state.AnimationHash;
                 matricesData[hash].Add(new Matrix4x4(matrix.c0, matrix.c1, matrix.c2, matrix.c3));
                 clipDatas[hash].Add(state.Clip);
-                overrideFrames[hash].Add(state.OverrideFrame);
             }
             lastLength = data.entities.Length;
         }
@@ -105,7 +99,6 @@ namespace AnimationBaker.Systems
             entityIndices.Clear();
             matricesData.Clear();
             clipDatas.Clear();
-            overrideFrames.Clear();
             for (int i = 0; i < data.entities.Length; i++)
             {
                 int index = data.entities[i].Index;
@@ -118,7 +111,6 @@ namespace AnimationBaker.Systems
                     matricesData.Add(hash, new List<Matrix4x4>());
                     entityIndices.Add(hash, new List<float>());
                     clipDatas.Add(hash, new List<float>());
-                    overrideFrames.Add(hash, new List<float>());
                     animated.Material.SetBuffer("_RandomWrite", randomWriteBuffer);
                     Graphics.SetRandomWriteTarget(1, randomWriteBuffer);
                 }
