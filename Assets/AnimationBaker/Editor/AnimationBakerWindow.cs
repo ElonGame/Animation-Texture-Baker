@@ -354,7 +354,7 @@ namespace AnimationBaker
                         for (int k = 0; k < mesh.vertexCount; k++)
                         {
                             var vert = (filter.transform.TransformPoint(mesh.vertices[k]) + boneOffset) * boneScale;
-                            infoList.Add(new VertInfo { position = vert, normal = mesh.normals[k] });
+                            infoList.Add(new VertInfo { position = vert, normal = mesh.normals[k], extra = 1 });
                         }
                     }
                     len++;
