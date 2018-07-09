@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using AnimationBaker.StateMachine.Nodes;
@@ -18,7 +19,6 @@ namespace AnimationBaker.StateMachine.Editor
 			BaseNode node = target as BaseNode;
 			StateGraph graph = node.graph as StateGraph;
 			base.OnHeaderGUI();
-
 		}
 
 		public override void OnBodyGUI()
@@ -28,17 +28,11 @@ namespace AnimationBaker.StateMachine.Editor
 
 			base.OnBodyGUI();
 
-			if (node.HasState)
+			if (node.HasState && node.InstanceInputs.Count() > 0 && node.InstanceOutputs.Count() > 0)
 			{
-				EditorGUILayout.BeginVertical();
-				foreach (var port in node.Ports)
-				{
-					if (port.IsDynamic && port.IsOutput)
-					{
-						NodeEditorGUILayout.PortField(port);
-					}
-				}
-				EditorGUILayout.EndVertical();
+				var input = node.InstanceInputs.First();
+				var output = node.InstanceOutputs.First();
+				NodeEditorGUILayout.PortPair(input, output);
 			}
 		}
 	}

@@ -11,7 +11,7 @@ namespace AnimationBaker.StateMachine.Nodes
     public class StartNode : BaseNode
     {
         [Output(ShowBackingValue.Never, ConnectionType.Override)]
-        public Empty exit;
+        public Empty Output;
 
         public override NodeType NodeType
         {

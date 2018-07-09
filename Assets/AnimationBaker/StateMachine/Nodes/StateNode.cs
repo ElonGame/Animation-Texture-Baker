@@ -10,11 +10,9 @@ using XNode;
 namespace AnimationBaker.StateMachine.Nodes
 {
     [System.Serializable]
+    [NodeTint("#767d80")]
     public class StateNode : BaseNode
     {
-        [Input(ShowBackingValue.Never, ConnectionType.Multiple)] public Empty enter;
-        [Output(ShowBackingValue.Never, ConnectionType.Multiple)] public Empty exit;
-        public override bool CanAddOutput { get => true; }
         public override bool HasState { get => true; }
 
         public override NodeType NodeType

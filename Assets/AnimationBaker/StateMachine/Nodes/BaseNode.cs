@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using AnimationBaker.StateMachine.Variables;
+using AnimationBaker.Utils;
 using XNode;
 
 namespace AnimationBaker.StateMachine.Nodes
@@ -16,25 +18,20 @@ namespace AnimationBaker.StateMachine.Nodes
     }
 
     [System.Serializable]
+    public class BaseNodeListTransitionRulesDictionary : SerializableDictionary<BaseNode, List<TransitionRules>> { }
+
+    [System.Serializable]
     public abstract class BaseNode : Node
     {
-
-        [HideInInspector]
-        public StateRule[] Rules = new StateRule[0];
-
         public abstract NodeType NodeType { get; set; }
-        public virtual bool CanAddOutput { get => false; }
         public virtual bool HasState { get => false; }
 
         [HideInInspector]
         public float Duration = 0;
         [HideInInspector]
-        public AnimationClip Clip;
+        public IntBoolDict RulesToggles;
         [HideInInspector]
-        public WrapMode WrapMode;
-
-        // [Input] public Empty enter;
-        // [Output] public Empty exit;
+        public BaseNodeListTransitionRulesDictionary Rules = new BaseNodeListTransitionRulesDictionary();
 
         public override object GetValue(NodePort port)
         {
@@ -49,28 +46,6 @@ namespace AnimationBaker.StateMachine.Nodes
             UpdateStaticPorts();
         }
 
-        public void MoveNext()
-        {
-            StateGraph fmGraph = graph as StateGraph;
-
-            // if (fmGraph.current != this)
-            // {
-            //     Debug.LogWarning("Node isn't active");
-            //     return;
-            // }
-
-            NodePort exitPort = GetOutputPort("exit");
-
-            if (!exitPort.IsConnected)
-            {
-                Debug.LogWarning("Node isn't connected");
-                return;
-            }
-
-            BaseNode node = exitPort.Connection.node as BaseNode;
-            node.OnEnter();
-        }
-
         public void OnEnter()
         {
             StateGraph fmGraph = graph as StateGraph;
@@ -78,14 +53,22 @@ namespace AnimationBaker.StateMachine.Nodes
 
         [Serializable]
         public class Empty { }
-    }
 
-    [System.Serializable]
-    public class StateRule
-    {
-        public VariableType VariableType;
-        public Qualifier Qualifier;
-        public object Value;
-        public System.Type ValueType;
+        public void RemoveVariables(BaseNode node)
+        {
+            Rules.Remove(node);
+        }
+
+        public void AddRule(BaseNode baseNode)
+        {
+            var rules = new TransitionRules();
+            var rule = new TransitionRule();
+            rules.Rules.Add(rule);
+            if (!Rules.ContainsKey(baseNode))
+            {
+                Rules.Add(baseNode, new List<TransitionRules>());
+            }
+            Rules[baseNode].Add(rules);
+        }
     }
 }
