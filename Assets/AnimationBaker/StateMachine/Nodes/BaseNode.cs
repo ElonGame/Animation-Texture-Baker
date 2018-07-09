@@ -1,9 +1,10 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
+using AnimationBaker.StateMachine.Transitions;
 using AnimationBaker.StateMachine.Variables;
-using AnimationBaker.Utils;
 using XNode;
 
 namespace AnimationBaker.StateMachine.Nodes
@@ -18,7 +19,7 @@ namespace AnimationBaker.StateMachine.Nodes
     }
 
     [System.Serializable]
-    public class BaseNodeListTransitionRulesDictionary : SerializableDictionary<BaseNode, List<TransitionRules>> { }
+    public class BaseNodeListTransitionRulesDictionary : SerializableDictionary<BaseNode, TransitionRules> { }
 
     [System.Serializable]
     public class RulesToggleDictionary : SerializableDictionary<int, bool> { }
@@ -59,16 +60,27 @@ namespace AnimationBaker.StateMachine.Nodes
             Rules.Remove(node);
         }
 
-        public void AddRule(BaseNode baseNode)
+        public void AddRule(BaseNode node)
         {
-            var rules = new TransitionRules();
+            TransitionRules rules = TransitionRules.CreateInstance<TransitionRules>();
+            rules.name = "_T" + name + node.name;
+            rules.node = this;
             var rule = new TransitionRule();
             rules.Rules.Add(rule);
-            if (!Rules.ContainsKey(baseNode))
-            {
-                Rules.Add(baseNode, new List<TransitionRules>());
-            }
-            Rules[baseNode].Add(rules);
+            Rules[node] = rules;
+#if UNITY_EDITOR
+            AssetDatabase.AddObjectToAsset(rules, this as StateNode);
+            AssetDatabase.SaveAssets();
+#endif
+        }
+
+        public void RemoveRule(BaseNode node, TransitionRules rules)
+        {
+            Rules.Remove(node);
+#if UNITY_EDITOR
+            UnityEngine.Object.DestroyImmediate(rules, true);
+            AssetDatabase.SaveAssets();
+#endif
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using AnimationBaker.StateMachine.Nodes;
+using AnimationBaker.StateMachine.Transitions;
 using AnimationBaker.StateMachine.Variables;
 using XNode;
 
@@ -48,23 +49,25 @@ namespace AnimationBaker.StateMachine.Nodes.Editor
 
         private void DrawConnection(NodePort fromPort, NodePort toPort)
         {
-            var toPortHash = toPort.GetHashCode();
-            if (!node.RulesToggles.ContainsKey(toPortHash))
+            var nodePortHash = toPort.node.name.GetHashCode();
+            if (!node.RulesToggles.ContainsKey(nodePortHash))
             {
-                node.RulesToggles[toPortHash] = false;
+                node.RulesToggles[nodePortHash] = false;
             }
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(13);
             var rect = EditorGUILayout.BeginVertical();
-            node.RulesToggles[toPortHash] = EditorGUILayout.Foldout(node.RulesToggles[toPortHash], node.name + " » " + toPort.node.name);
-            if (node.RulesToggles[toPortHash])
+            node.RulesToggles[nodePortHash] = EditorGUILayout.Foldout(node.RulesToggles[nodePortHash], node.name + " » " + toPort.node.name);
+            if (node.RulesToggles[nodePortHash])
             {
-                DrawcontrolButtons(fromPort, toPort, toPortHash, rect);
+                DrawcontrolButtons(fromPort, toPort, nodePortHash, rect);
                 EditorGUILayout.LabelField("Rules");
                 foreach (var item in node.Rules)
                 {
                     if (item.Key.Equals(toPort.node as BaseNode))
+                    {
                         DrawRules(item);
+                    }
                 }
                 GUILayout.Space(4);
             }
@@ -72,11 +75,17 @@ namespace AnimationBaker.StateMachine.Nodes.Editor
             EditorGUILayout.EndHorizontal();
         }
 
-        private void DrawRules(KeyValuePair<BaseNode, List<TransitionRules>> item)
+        private void DrawRules(KeyValuePair<BaseNode, TransitionRules> item)
         {
-            foreach (var rules in item.Value)
+            foreach (var rules in item.Value.Rules)
             {
+                EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.LabelField(item.Key.ToString());
+                if (GUILayout.Button("x", EditorStyles.miniButton, GUILayout.Width(24)))
+                {
+                    node.RemoveRule(item.Key, item.Value);
+                }
+                EditorGUILayout.EndHorizontal();
             }
         }
 

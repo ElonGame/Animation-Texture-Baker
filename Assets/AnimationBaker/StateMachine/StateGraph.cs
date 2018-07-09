@@ -83,7 +83,7 @@ namespace AnimationBaker.StateMachine
 
 		public void OnAfterDeserialize()
 		{
-			foreach (var node in nodes)
+			foreach (BaseNode node in nodes)
 			{
 				node.graph = this;
 			}

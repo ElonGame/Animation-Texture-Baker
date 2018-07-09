@@ -59,7 +59,7 @@ MonoBehaviour:
   ShadowCastingMode: 1
   ReceivesShadows: 1
   Vertices: 0
-  PrefabHashCode: 3318
+  PrefabHashCode: 0
   PrefabAnimation: {fileID: 11100000, guid: 2232304ae88cb3e4783a7983a12cfc6e, type: 3}
 --- !u!114 &114099485447884572
 MonoBehaviour:
@@ -104,6 +104,7 @@ MonoBehaviour:
     values: 
   Rules:
     keys: []
+    values: []
 --- !u!114 &114266658679195210
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -115,7 +116,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e47ba33276f6dd46be1f99f64a7ad9a, type: 3}
   m_Name: _VIsDead
   m_EditorClassIdentifier: 
-  graph: {fileID: 0}
+  graph: {fileID: 11400000}
   Name: IsDead
   VariableType: 2
   DefaultFloatVal: 0
@@ -175,10 +176,11 @@ MonoBehaviour:
       _dynamic: 1
   Duration: 0
   RulesToggles:
-    keys: 
-    values: 
+    keys: 9b63e8b6e0ef4014
+    values: 0000
   Rules:
     keys: []
+    values: []
 --- !u!114 &114360536962050236
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -219,6 +221,7 @@ MonoBehaviour:
     values: 
   Rules:
     keys: []
+    values: []
 --- !u!114 &114573914785597360
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -274,23 +277,24 @@ MonoBehaviour:
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       connections:
       - fieldName: Input
-        node: {fileID: 114978369739515956}
-        reroutePoints: []
-      - fieldName: Input
         node: {fileID: 114320399433439268}
         reroutePoints: []
       - fieldName: Input
         node: {fileID: 114711402703778610}
+        reroutePoints: []
+      - fieldName: Input
+        node: {fileID: 114978369739515956}
         reroutePoints: []
       _direction: 1
       _connectionType: 0
       _dynamic: 1
   Duration: 0
   RulesToggles:
-    keys: 005093528003058e80dee01b80abe66c807f68c2005bf70c
-    values: 000000010101
+    keys: 75f140147aa56cf7e9719da5
+    values: 000000
   Rules:
     keys: []
+    values: []
 --- !u!114 &114688372727979512
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -323,7 +327,7 @@ MonoBehaviour:
   m_Name: Attack
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 168, y: 200}
+  position: {x: 168, y: 168}
   ports:
     keys:
     - Input
@@ -356,10 +360,11 @@ MonoBehaviour:
       _dynamic: 1
   Duration: 0
   RulesToggles:
-    keys: 807865a38003058e80ff3c91009ddc1c
-    values: 00000101
+    keys: 9b63e8b675f14014
+    values: 0000
   Rules:
     keys: []
+    values: []
 --- !u!114 &114736184882604530
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -414,6 +419,7 @@ MonoBehaviour:
     values: 
   Rules:
     keys: []
+    values: []
 --- !u!114 &114978369739515956
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -426,7 +432,7 @@ MonoBehaviour:
   m_Name: Walk
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 168, y: 104}
+  position: {x: 168, y: 72}
   ports:
     keys:
     - Input
@@ -459,7 +465,8 @@ MonoBehaviour:
       _dynamic: 1
   Duration: 0
   RulesToggles:
-    keys: 807865a38003058e
+    keys: 9b63e8b675f14014
     values: 0000
   Rules:
     keys: []
+    values: []
