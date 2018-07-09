@@ -83,7 +83,7 @@ namespace AnimationBaker
                     PlayerPrefs.SetString("animationbakeroutput", path);
                 }
             }
-            EditorGUILayout.LabelField("Output: " + Utils.ClampPath(outputDir, horizontalRect.width - 110));
+            EditorGUILayout.LabelField("Output: " + StringUtils.ClampPath(outputDir, horizontalRect.width - 110));
 
             if (string.IsNullOrEmpty(outputDir)) return;
             if (!Directory.Exists(outputDir)) return;
@@ -231,8 +231,8 @@ namespace AnimationBaker
             Mesh newMesh = new Mesh();
             var offset = PopulateMesh(newMesh, oldMesh, skinRenderer.transform);
             var verticesCount = newMesh.vertexCount;
-            var prefabPath = Utils.Combine(outputPath, chosen.name);
-            var prefabDir = Utils.Combine(outputDir, chosen.name);
+            var prefabPath = StringUtils.Combine(outputPath, chosen.name);
+            var prefabDir = StringUtils.Combine(outputDir, chosen.name);
             if (!Directory.Exists(prefabDir))
                 Directory.CreateDirectory(prefabDir);
 
@@ -403,8 +403,8 @@ namespace AnimationBaker
 
             buffer.Release();
 
-            AssetDatabase.CreateAsset(positionTexture, Utils.Combine(prefabPath, "Positions.asset"));
-            AssetDatabase.CreateAsset(normalTexture, Utils.Combine(prefabPath, "Normals.asset"));
+            AssetDatabase.CreateAsset(positionTexture, StringUtils.Combine(prefabPath, "Positions.asset"));
+            AssetDatabase.CreateAsset(normalTexture, StringUtils.Combine(prefabPath, "Normals.asset"));
 
             // var pngData = positionTexture.EncodeToPNG();
             // System.IO.File.WriteAllBytes(Utils.Combine(prefabPath, "DebugPositions.png"), pngData);
@@ -433,7 +433,7 @@ namespace AnimationBaker
             var mr = go.AddComponent<MeshRenderer>();
             mr.sharedMaterials = materials;
             mr.material = materials[0];
-            PrefabUtility.CreatePrefab(Utils.Combine(prefabPath, go.name + ".prefab"), go);
+            PrefabUtility.CreatePrefab(StringUtils.Combine(prefabPath, go.name + ".prefab"), go);
             DestroyImmediate(go);
             DestroyImmediate(instance);
         }
