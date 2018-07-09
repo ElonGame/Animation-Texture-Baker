@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -21,16 +21,16 @@ namespace AnimationBaker.StateMachine.Nodes
     public class BaseNodeListTransitionRulesDictionary : SerializableDictionary<BaseNode, List<TransitionRules>> { }
 
     [System.Serializable]
+    public class RulesToggleDictionary : SerializableDictionary<int, bool> { }
+
+    [System.Serializable]
     public abstract class BaseNode : Node
     {
         public abstract NodeType NodeType { get; set; }
         public virtual bool HasState { get => false; }
 
-        [HideInInspector]
         public float Duration = 0;
-        [HideInInspector]
-        public IntBoolDict RulesToggles;
-        [HideInInspector]
+        public RulesToggleDictionary RulesToggles = new RulesToggleDictionary();
         public BaseNodeListTransitionRulesDictionary Rules = new BaseNodeListTransitionRulesDictionary();
 
         public override object GetValue(NodePort port)
