@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
-namespace XNodeEditor
+namespace AnimationBaker.Utils.XNodeEditor
 {
     /// <summary> Deals with modified assets </summary>
     class NodeEditorAssetModProcessor : UnityEditor.AssetModificationProcessor
@@ -20,7 +20,7 @@ namespace XNodeEditor
             // Check script type. Return if deleting a non-node script
             UnityEditor.MonoScript script = obj as UnityEditor.MonoScript;
             System.Type scriptType = script.GetClass();
-            if (scriptType == null || (scriptType != typeof(XNode.Node) && !scriptType.IsSubclassOf(typeof(XNode.Node)))) return AssetDeleteResult.DidNotDelete;
+            if (scriptType == null || (scriptType != typeof(AnimationBaker.Utils.XNode.Node) && !scriptType.IsSubclassOf(typeof(AnimationBaker.Utils.XNode.Node)))) return AssetDeleteResult.DidNotDelete;
 
             // Find all ScriptableObjects using this script
             string[] guids = AssetDatabase.FindAssets("t:" + scriptType);
@@ -30,7 +30,7 @@ namespace XNodeEditor
                 Object[] objs = AssetDatabase.LoadAllAssetRepresentationsAtPath(assetpath);
                 for (int k = 0; k < objs.Length; k++)
                 {
-                    XNode.Node node = objs[k] as XNode.Node;
+                    AnimationBaker.Utils.XNode.Node node = objs[k] as AnimationBaker.Utils.XNode.Node;
                     if (node.GetType() == scriptType)
                     {
                         if (node != null && node.graph != null)
@@ -51,11 +51,11 @@ namespace XNodeEditor
         private static void OnReloadEditor()
         {
             // Find all NodeGraph assets
-            string[] guids = AssetDatabase.FindAssets("t:" + typeof(XNode.NodeGraph));
+            string[] guids = AssetDatabase.FindAssets("t:" + typeof(AnimationBaker.Utils.XNode.NodeGraph));
             for (int i = 0; i < guids.Length; i++)
             {
                 string assetpath = AssetDatabase.GUIDToAssetPath(guids[i]);
-                XNode.NodeGraph graph = AssetDatabase.LoadAssetAtPath(assetpath, typeof(XNode.NodeGraph)) as XNode.NodeGraph;
+                AnimationBaker.Utils.XNode.NodeGraph graph = AssetDatabase.LoadAssetAtPath(assetpath, typeof(AnimationBaker.Utils.XNode.NodeGraph)) as AnimationBaker.Utils.XNode.NodeGraph;
                 if (graph == null) return;
                 graph.nodes.RemoveAll(x => x == null); //Remove null items
                 Object[] objs = AssetDatabase.LoadAllAssetRepresentationsAtPath(assetpath);

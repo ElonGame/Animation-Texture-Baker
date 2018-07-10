@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using AnimationBaker.StateMachine.Nodes;
-using XNodeEditor;
+using AnimationBaker.Utils.XNodeEditor;
 
 namespace AnimationBaker.StateMachine.Editor
 {

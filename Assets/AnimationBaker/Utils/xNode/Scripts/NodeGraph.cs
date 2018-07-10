@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace XNode
+namespace AnimationBaker.Utils.XNode
 {
     /// <summary> Base class for all node graphs </summary>
     [Serializable]
@@ -61,7 +61,7 @@ namespace XNode
         }
 
         /// <summary> Create a new deep copy of this graph </summary>
-        public XNode.NodeGraph Copy()
+        public AnimationBaker.Utils.XNode.NodeGraph Copy()
         {
             // Instantiate a new nodegraph instance
             NodeGraph graph = Instantiate(this);
@@ -89,7 +89,7 @@ namespace XNode
 
         public virtual void ImportSerialized(object data)
         {
-            var node = data as XNode.Node;
+            var node = data as AnimationBaker.Utils.XNode.Node;
             if (node != null && !nodes.Contains(node))
             {
                 nodes.Add(node);

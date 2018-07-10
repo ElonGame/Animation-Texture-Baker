@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
-namespace XNode
+namespace AnimationBaker.Utils.XNode
 {
     [Serializable]
     public class NodePort

@@ -8,7 +8,7 @@ using UnityEditor;
 #endif
 using AnimationBaker.StateMachine.Nodes;
 using AnimationBaker.StateMachine.Variables;
-using XNode;
+using AnimationBaker.Utils.XNode;
 
 namespace AnimationBaker.StateMachine
 {

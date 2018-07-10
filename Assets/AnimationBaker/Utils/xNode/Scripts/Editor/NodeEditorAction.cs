@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEditor;
 
-namespace XNodeEditor
+namespace AnimationBaker.Utils.XNodeEditor
 {
     public partial class NodeEditorWindow
     {
@@ -17,10 +17,10 @@ namespace XNodeEditor
         private bool IsHoveringPort { get { return hoveredPort != null; } }
         private bool IsHoveringNode { get { return hoveredNode != null; } }
         private bool IsHoveringReroute { get { return hoveredReroute.port != null; } }
-        private XNode.Node hoveredNode = null;
-        [NonSerialized] private XNode.NodePort hoveredPort = null;
-        [NonSerialized] private XNode.NodePort draggedOutput = null;
-        [NonSerialized] private XNode.NodePort draggedOutputTarget = null;
+        private AnimationBaker.Utils.XNode.Node hoveredNode = null;
+        [NonSerialized] private AnimationBaker.Utils.XNode.NodePort hoveredPort = null;
+        [NonSerialized] private AnimationBaker.Utils.XNode.NodePort draggedOutput = null;
+        [NonSerialized] private AnimationBaker.Utils.XNode.NodePort draggedOutputTarget = null;
         [NonSerialized] private List<Vector2> draggedOutputReroutes = new List<Vector2>();
         private RerouteReference hoveredReroute = new RerouteReference();
         private List<RerouteReference> selectedReroutes = new List<RerouteReference>();
@@ -32,11 +32,11 @@ namespace XNodeEditor
 
         private struct RerouteReference
         {
-            public XNode.NodePort port;
+            public AnimationBaker.Utils.XNode.NodePort port;
             public int connectionIndex;
             public int pointIndex;
 
-            public RerouteReference(XNode.NodePort port, int connectionIndex, int pointIndex)
+            public RerouteReference(AnimationBaker.Utils.XNode.NodePort port, int connectionIndex, int pointIndex)
             {
                 this.port = port;
                 this.connectionIndex = connectionIndex;
@@ -95,9 +95,9 @@ namespace XNodeEditor
                             // Move selected nodes with offset
                             for (int i = 0; i < Selection.objects.Length; i++)
                             {
-                                if (Selection.objects[i] is XNode.Node)
+                                if (Selection.objects[i] is AnimationBaker.Utils.XNode.Node)
                                 {
-                                    XNode.Node node = Selection.objects[i] as XNode.Node;
+                                    AnimationBaker.Utils.XNode.Node node = Selection.objects[i] as AnimationBaker.Utils.XNode.Node;
                                     node.position = mousePos + dragOffset[i];
                                     if (gridSnap)
                                     {
@@ -167,8 +167,8 @@ namespace XNodeEditor
                                 hoveredPort.VerifyConnections();
                                 if (hoveredPort.IsConnected)
                                 {
-                                    XNode.Node node = hoveredPort.node;
-                                    XNode.NodePort output = hoveredPort.Connection;
+                                    AnimationBaker.Utils.XNode.Node node = hoveredPort.node;
+                                    AnimationBaker.Utils.XNode.NodePort output = hoveredPort.Connection;
                                     int outputConnectionIndex = output.GetConnectionIndex(hoveredPort);
                                     draggedOutputReroutes = output.GetReroutePoints(outputConnectionIndex);
                                     hoveredPort.Disconnect(output);
@@ -233,7 +233,7 @@ namespace XNodeEditor
                             //If connection is valid, save it
                             if (draggedOutputTarget != null)
                             {
-                                XNode.Node node = draggedOutputTarget.node;
+                                AnimationBaker.Utils.XNode.Node node = draggedOutputTarget.node;
                                 if (graph.nodes.Count != 0) draggedOutput.Connect(draggedOutputTarget);
 
                                 // ConnectionIndex can be -1 if the connection is removed instantly after creation
@@ -253,8 +253,8 @@ namespace XNodeEditor
                         }
                         else if (currentActivity == NodeActivity.DragNode)
                         {
-                            IEnumerable<XNode.Node> nodes = Selection.objects.Where(x => x is XNode.Node).Select(x => x as XNode.Node);
-                            foreach (XNode.Node node in nodes) EditorUtility.SetDirty(node);
+                            IEnumerable<AnimationBaker.Utils.XNode.Node> nodes = Selection.objects.Where(x => x is AnimationBaker.Utils.XNode.Node).Select(x => x as AnimationBaker.Utils.XNode.Node);
+                            foreach (AnimationBaker.Utils.XNode.Node node in nodes) EditorUtility.SetDirty(node);
                             if (NodeEditorPreferences.GetSettings().autoSave) AssetDatabase.SaveAssets();
                         }
                         else if (!IsHoveringNode)
@@ -352,9 +352,9 @@ namespace XNodeEditor
             // Selected nodes
             for (int i = 0; i < Selection.objects.Length; i++)
             {
-                if (Selection.objects[i] is XNode.Node)
+                if (Selection.objects[i] is AnimationBaker.Utils.XNode.Node)
                 {
-                    XNode.Node node = Selection.objects[i] as XNode.Node;
+                    AnimationBaker.Utils.XNode.Node node = Selection.objects[i] as AnimationBaker.Utils.XNode.Node;
                     dragOffset[i] = node.position - WindowToGridPosition(current.mousePosition);
                 }
             }
@@ -375,7 +375,7 @@ namespace XNodeEditor
 
         public void CreateNode(Type type, Vector2 position)
         {
-            XNode.Node node = graph.AddNode(type);
+            AnimationBaker.Utils.XNode.Node node = graph.AddNode(type);
             node.position = position;
             node.name = UnityEditor.ObjectNames.NicifyVariableName(type.Name);
             AssetDatabase.AddObjectToAsset(node, graph);
@@ -395,9 +395,9 @@ namespace XNodeEditor
             selectedReroutes.Clear();
             foreach (UnityEngine.Object item in Selection.objects)
             {
-                if (item is XNode.Node)
+                if (item is AnimationBaker.Utils.XNode.Node)
                 {
-                    XNode.Node node = item as XNode.Node;
+                    AnimationBaker.Utils.XNode.Node node = item as AnimationBaker.Utils.XNode.Node;
                     graphEditor.RemoveNode(node);
                 }
             }
@@ -406,15 +406,15 @@ namespace XNodeEditor
         /// <summary> Initiate a rename on the currently selected node </summary>
         public void RenameSelectedNode()
         {
-            if (Selection.objects.Length == 1 && Selection.activeObject is XNode.Node)
+            if (Selection.objects.Length == 1 && Selection.activeObject is AnimationBaker.Utils.XNode.Node)
             {
-                XNode.Node node = Selection.activeObject as XNode.Node;
+                AnimationBaker.Utils.XNode.Node node = Selection.activeObject as AnimationBaker.Utils.XNode.Node;
                 NodeEditor.GetEditor(node).InitiateRename();
             }
         }
 
         /// <summary> Draw this node on top of other nodes by placing it last in the graph.nodes list </summary>
-        public void MoveNodeToTop(XNode.Node node)
+        public void MoveNodeToTop(AnimationBaker.Utils.XNode.Node node)
         {
             int index;
             while ((index = graph.nodes.IndexOf(node)) != graph.nodes.Count - 1)
@@ -428,14 +428,14 @@ namespace XNodeEditor
         public void DublicateSelectedNodes()
         {
             UnityEngine.Object[] newNodes = new UnityEngine.Object[Selection.objects.Length];
-            Dictionary<XNode.Node, XNode.Node> substitutes = new Dictionary<XNode.Node, XNode.Node>();
+            Dictionary<AnimationBaker.Utils.XNode.Node, AnimationBaker.Utils.XNode.Node> substitutes = new Dictionary<AnimationBaker.Utils.XNode.Node, AnimationBaker.Utils.XNode.Node>();
             for (int i = 0; i < Selection.objects.Length; i++)
             {
-                if (Selection.objects[i] is XNode.Node)
+                if (Selection.objects[i] is AnimationBaker.Utils.XNode.Node)
                 {
-                    XNode.Node srcNode = Selection.objects[i] as XNode.Node;
+                    AnimationBaker.Utils.XNode.Node srcNode = Selection.objects[i] as AnimationBaker.Utils.XNode.Node;
                     if (srcNode.graph != graph) continue; // ignore nodes selected in another graph
-                    XNode.Node newNode = graphEditor.CopyNode(srcNode);
+                    AnimationBaker.Utils.XNode.Node newNode = graphEditor.CopyNode(srcNode);
                     substitutes.Add(srcNode, newNode);
                     newNode.position = srcNode.position + new Vector2(30, 30);
                     newNodes[i] = newNode;
@@ -445,21 +445,21 @@ namespace XNodeEditor
             // Walk through the selected nodes again, recreate connections, using the new nodes
             for (int i = 0; i < Selection.objects.Length; i++)
             {
-                if (Selection.objects[i] is XNode.Node)
+                if (Selection.objects[i] is AnimationBaker.Utils.XNode.Node)
                 {
-                    XNode.Node srcNode = Selection.objects[i] as XNode.Node;
+                    AnimationBaker.Utils.XNode.Node srcNode = Selection.objects[i] as AnimationBaker.Utils.XNode.Node;
                     if (srcNode.graph != graph) continue; // ignore nodes selected in another graph
-                    foreach (XNode.NodePort port in srcNode.Ports)
+                    foreach (AnimationBaker.Utils.XNode.NodePort port in srcNode.Ports)
                     {
                         for (int c = 0; c < port.ConnectionCount; c++)
                         {
-                            XNode.NodePort inputPort = port.direction == XNode.NodePort.IO.Input ? port : port.GetConnection(c);
-                            XNode.NodePort outputPort = port.direction == XNode.NodePort.IO.Output ? port : port.GetConnection(c);
+                            AnimationBaker.Utils.XNode.NodePort inputPort = port.direction == AnimationBaker.Utils.XNode.NodePort.IO.Input ? port : port.GetConnection(c);
+                            AnimationBaker.Utils.XNode.NodePort outputPort = port.direction == AnimationBaker.Utils.XNode.NodePort.IO.Output ? port : port.GetConnection(c);
 
                             if (substitutes.ContainsKey(inputPort.node) && substitutes.ContainsKey(outputPort.node))
                             {
-                                XNode.Node newNodeIn = substitutes[inputPort.node];
-                                XNode.Node newNodeOut = substitutes[outputPort.node];
+                                AnimationBaker.Utils.XNode.Node newNodeIn = substitutes[inputPort.node];
+                                AnimationBaker.Utils.XNode.Node newNodeOut = substitutes[outputPort.node];
                                 newNodeIn.UpdateStaticPorts();
                                 newNodeOut.UpdateStaticPorts();
                                 inputPort = newNodeIn.GetInputPort(inputPort.fieldName);
@@ -511,7 +511,7 @@ namespace XNodeEditor
             }
         }
 
-        bool IsHoveringTitle(XNode.Node node)
+        bool IsHoveringTitle(AnimationBaker.Utils.XNode.Node node)
         {
             Vector2 mousePos = Event.current.mousePosition;
             //Get node position

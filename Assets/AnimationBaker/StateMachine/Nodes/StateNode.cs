@@ -5,7 +5,7 @@ using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
-using XNode;
+using AnimationBaker.Utils.XNode;
 
 namespace AnimationBaker.StateMachine.Nodes
 {

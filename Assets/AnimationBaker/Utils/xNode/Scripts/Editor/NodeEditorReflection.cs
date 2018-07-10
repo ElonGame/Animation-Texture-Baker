@@ -3,12 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using UnityEditor;
 using UnityEngine;
+using UnityEditor;
 
-namespace XNodeEditor {
+namespace AnimationBaker.Utils.XNodeEditor
+{
     /// <summary> Contains reflection-related info </summary>
-    public partial class NodeEditorWindow {
+    public partial class NodeEditorWindow
+    {
         /// <summary> Custom node tint colors defined with [NodeColor(r, g, b)] </summary>
         public static Dictionary<Type, Color> nodeTint { get { return _nodeTint != null ? _nodeTint : _nodeTint = GetNodeTint(); } }
 
@@ -22,70 +24,84 @@ namespace XNodeEditor {
 
         [NonSerialized] private static Type[] _nodeTypes = null;
 
-        public static Type[] GetNodeTypes() {
+        public static Type[] GetNodeTypes()
+        {
             //Get all classes deriving from Node via reflection
-            return GetDerivedTypes(typeof(XNode.Node));
+            return GetDerivedTypes(typeof(AnimationBaker.Utils.XNode.Node));
         }
 
-        public static Dictionary<Type, Color> GetNodeTint() {
+        public static Dictionary<Type, Color> GetNodeTint()
+        {
             Dictionary<Type, Color> tints = new Dictionary<Type, Color>();
-            for (int i = 0; i < nodeTypes.Length; i++) {
-                var attribs = nodeTypes[i].GetCustomAttributes(typeof(XNode.Node.NodeTint), true);
+            for (int i = 0; i < nodeTypes.Length; i++)
+            {
+                var attribs = nodeTypes[i].GetCustomAttributes(typeof(AnimationBaker.Utils.XNode.Node.NodeTint), true);
                 if (attribs == null || attribs.Length == 0) continue;
-                XNode.Node.NodeTint attrib = attribs[0] as XNode.Node.NodeTint;
+                AnimationBaker.Utils.XNode.Node.NodeTint attrib = attribs[0] as AnimationBaker.Utils.XNode.Node.NodeTint;
                 tints.Add(nodeTypes[i], attrib.color);
             }
             return tints;
         }
 
-        public static Dictionary<Type, int> GetNodeWidth() {
+        public static Dictionary<Type, int> GetNodeWidth()
+        {
             Dictionary<Type, int> widths = new Dictionary<Type, int>();
-            for (int i = 0; i < nodeTypes.Length; i++) {
-                var attribs = nodeTypes[i].GetCustomAttributes(typeof(XNode.Node.NodeWidth), true);
+            for (int i = 0; i < nodeTypes.Length; i++)
+            {
+                var attribs = nodeTypes[i].GetCustomAttributes(typeof(AnimationBaker.Utils.XNode.Node.NodeWidth), true);
                 if (attribs == null || attribs.Length == 0) continue;
-                XNode.Node.NodeWidth attrib = attribs[0] as XNode.Node.NodeWidth;
+                AnimationBaker.Utils.XNode.Node.NodeWidth attrib = attribs[0] as AnimationBaker.Utils.XNode.Node.NodeWidth;
                 widths.Add(nodeTypes[i], attrib.width);
             }
             return widths;
         }
 
         /// <summary> Get all classes deriving from baseType via reflection </summary>
-        public static Type[] GetDerivedTypes(Type baseType) {
+        public static Type[] GetDerivedTypes(Type baseType)
+        {
             List<System.Type> types = new List<System.Type>();
             System.Reflection.Assembly[] assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
-            foreach (Assembly assembly in assemblies) {
+            foreach (Assembly assembly in assemblies)
+            {
                 types.AddRange(assembly.GetTypes().Where(t => !t.IsAbstract && baseType.IsAssignableFrom(t)).ToArray());
             }
             return types.ToArray();
         }
 
-        public static object ObjectFromType(Type type) {
+        public static object ObjectFromType(Type type)
+        {
             return Activator.CreateInstance(type);
         }
 
-        public static object ObjectFromFieldName(object obj, string fieldName) {
+        public static object ObjectFromFieldName(object obj, string fieldName)
+        {
             Type type = obj.GetType();
             FieldInfo fieldInfo = type.GetField(fieldName);
             return fieldInfo.GetValue(obj);
         }
 
-        public static KeyValuePair<ContextMenu, MethodInfo>[] GetContextMenuMethods(object obj) {
+        public static KeyValuePair<ContextMenu, MethodInfo>[] GetContextMenuMethods(object obj)
+        {
             Type type = obj.GetType();
             MethodInfo[] methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
             List<KeyValuePair<ContextMenu, MethodInfo>> kvp = new List<KeyValuePair<ContextMenu, MethodInfo>>();
-            for (int i = 0; i < methods.Length; i++) {
+            for (int i = 0; i < methods.Length; i++)
+            {
                 ContextMenu[] attribs = methods[i].GetCustomAttributes(typeof(ContextMenu), true).Select(x => x as ContextMenu).ToArray();
                 if (attribs == null || attribs.Length == 0) continue;
-                if (methods[i].GetParameters().Length != 0) {
+                if (methods[i].GetParameters().Length != 0)
+                {
                     Debug.LogWarning("Method " + methods[i].DeclaringType.Name + "." + methods[i].Name + " has parameters and cannot be used for context menu commands.");
                     continue;
                 }
-                if (methods[i].IsStatic) {
+                if (methods[i].IsStatic)
+                {
                     Debug.LogWarning("Method " + methods[i].DeclaringType.Name + "." + methods[i].Name + " is static and cannot be used for context menu commands.");
                     continue;
                 }
 
-                for (int k = 0; k < attribs.Length; k++) {
+                for (int k = 0; k < attribs.Length; k++)
+                {
                     kvp.Add(new KeyValuePair<ContextMenu, MethodInfo>(attribs[k], methods[i]));
                 }
             }
@@ -97,8 +113,10 @@ namespace XNodeEditor {
         }
 
         /// <summary> Very crude. Uses a lot of reflection. </summary>
-        public static void OpenPreferences() {
-            try {
+        public static void OpenPreferences()
+        {
+            try
+            {
                 //Open preferences window
                 Assembly assembly = Assembly.GetAssembly(typeof(UnityEditor.EditorWindow));
                 Type type = assembly.GetType("UnityEditor.PreferencesWindow");
@@ -109,7 +127,8 @@ namespace XNodeEditor {
 
                 //Make sure custom sections are added (because waiting for it to happen automatically is too slow)
                 FieldInfo refreshField = type.GetField("m_RefreshCustomPreferences", BindingFlags.NonPublic | BindingFlags.Instance);
-                if ((bool) refreshField.GetValue(window)) {
+                if ((bool) refreshField.GetValue(window))
+                {
                     type.GetMethod("AddCustomSections", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(window, null);
                     refreshField.SetValue(window, false);
                 }
@@ -121,16 +140,20 @@ namespace XNodeEditor {
                 //Iterate through sections and check contents
                 Type sectionType = sectionsField.FieldType.GetGenericArguments() [0];
                 FieldInfo sectionContentField = sectionType.GetField("content", BindingFlags.Instance | BindingFlags.Public);
-                for (int i = 0; i < sections.Count; i++) {
+                for (int i = 0; i < sections.Count; i++)
+                {
                     GUIContent sectionContent = sectionContentField.GetValue(sections[i]) as GUIContent;
-                    if (sectionContent.text == "Node Editor") {
+                    if (sectionContent.text == "Node Editor")
+                    {
                         //Found contents - Set index
                         FieldInfo sectionIndexField = type.GetField("m_SelectedSectionIndex", BindingFlags.Instance | BindingFlags.NonPublic);
                         sectionIndexField.SetValue(window, i);
                         return;
                     }
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 Debug.LogError(e);
                 Debug.LogWarning("Unity has changed around internally. Can't open properties through reflection. Please contact xNode developer and supply unity version number.");
             }

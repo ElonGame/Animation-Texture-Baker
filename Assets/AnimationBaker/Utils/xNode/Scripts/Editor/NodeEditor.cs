@@ -4,17 +4,17 @@ using System.Linq;
 using UnityEngine;
 using UnityEditor;
 
-namespace XNodeEditor
+namespace AnimationBaker.Utils.XNodeEditor
 {
     /// <summary> Base class to derive custom Node editors from. Use this to create your own custom inspectors and editors for your nodes. </summary>
 
-    [CustomNodeEditor(typeof(XNode.Node))]
-    public class NodeEditor : XNodeEditor.Internal.NodeEditorBase<NodeEditor, NodeEditor.CustomNodeEditorAttribute, XNode.Node>
+    [CustomNodeEditor(typeof(AnimationBaker.Utils.XNode.Node))]
+    public class NodeEditor : AnimationBaker.Utils.XNodeEditor.Internal.NodeEditorBase<NodeEditor, NodeEditor.CustomNodeEditorAttribute, AnimationBaker.Utils.XNode.Node>
     {
 
         /// <summary> Fires every whenever a node was modified through the editor </summary>
-        public static Action<XNode.Node> onUpdateNode;
-        public static Dictionary<XNode.NodePort, Vector2> portPositions;
+        public static Action<AnimationBaker.Utils.XNode.Node> onUpdateNode;
+        public static Dictionary<AnimationBaker.Utils.XNode.NodePort, Vector2> portPositions;
         public static int renaming;
 
         /// <summary> Draws the node GUI.</summary>
@@ -54,7 +54,7 @@ namespace XNodeEditor
         public virtual void OnBodyGUI()
         {
             string[] excludes = { "m_Script", "graph", "position", "ports", "Duration", "Rules", "RulesToggles" };
-            portPositions = new Dictionary<XNode.NodePort, Vector2>();
+            portPositions = new Dictionary<AnimationBaker.Utils.XNode.NodePort, Vector2>();
 
             SerializedProperty iterator = serializedObject.GetIterator();
             bool enterChildren = true;
@@ -94,7 +94,7 @@ namespace XNodeEditor
 
         [AttributeUsage(AttributeTargets.Class)]
         public class CustomNodeEditorAttribute : Attribute,
-        XNodeEditor.Internal.NodeEditorBase<NodeEditor, NodeEditor.CustomNodeEditorAttribute, XNode.Node>.INodeEditorAttrib
+        AnimationBaker.Utils.XNodeEditor.Internal.NodeEditorBase<NodeEditor, NodeEditor.CustomNodeEditorAttribute, AnimationBaker.Utils.XNode.Node>.INodeEditorAttrib
         {
             private Type inspectedType;
             /// <summary> Tells a NodeEditor which Node type it is an editor for </summary>

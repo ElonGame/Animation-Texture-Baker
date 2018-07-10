@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-namespace XNodeEditor
+namespace AnimationBaker.Utils.XNodeEditor
 {
     public static class NodeEditorPreferences
     {
         public enum NoodleType { Curve, Line, Angled }
 
         /// <summary> The last editor we checked. This should be the one we modify </summary>
-        private static XNodeEditor.NodeGraphEditor lastEditor;
+        private static AnimationBaker.Utils.XNodeEditor.NodeGraphEditor lastEditor;
         /// <summary> The last key we checked. This should be the one we modify </summary>
         private static string lastKey = "xNode.Settings";
 
@@ -81,14 +81,14 @@ namespace XNodeEditor
         /// <summary> Get settings of current active editor </summary>
         public static Settings GetSettings()
         {
-            if (XNodeEditor.NodeEditorWindow.current == null) return null;
-            if (lastEditor != XNodeEditor.NodeEditorWindow.current.graphEditor)
+            if (AnimationBaker.Utils.XNodeEditor.NodeEditorWindow.current == null) return null;
+            if (lastEditor != AnimationBaker.Utils.XNodeEditor.NodeEditorWindow.current.graphEditor)
             {
-                object[] attribs = XNodeEditor.NodeEditorWindow.current.graphEditor.GetType().GetCustomAttributes(typeof(XNodeEditor.NodeGraphEditor.CustomNodeGraphEditorAttribute), true);
+                object[] attribs = AnimationBaker.Utils.XNodeEditor.NodeEditorWindow.current.graphEditor.GetType().GetCustomAttributes(typeof(AnimationBaker.Utils.XNodeEditor.NodeGraphEditor.CustomNodeGraphEditorAttribute), true);
                 if (attribs.Length == 1)
                 {
-                    XNodeEditor.NodeGraphEditor.CustomNodeGraphEditorAttribute attrib = attribs[0] as XNodeEditor.NodeGraphEditor.CustomNodeGraphEditorAttribute;
-                    lastEditor = XNodeEditor.NodeEditorWindow.current.graphEditor;
+                    AnimationBaker.Utils.XNodeEditor.NodeGraphEditor.CustomNodeGraphEditorAttribute attrib = attribs[0] as AnimationBaker.Utils.XNodeEditor.NodeGraphEditor.CustomNodeGraphEditorAttribute;
+                    lastEditor = AnimationBaker.Utils.XNodeEditor.NodeEditorWindow.current.graphEditor;
                     lastKey = attrib.editorPrefsKey;
                 }
                 else return null;

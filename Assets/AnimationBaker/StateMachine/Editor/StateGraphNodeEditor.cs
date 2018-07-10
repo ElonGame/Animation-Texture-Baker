@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using XNodeEditor;
+using AnimationBaker.Utils.XNodeEditor;
 
 namespace AnimationBaker.StateMachine.Editor
 {

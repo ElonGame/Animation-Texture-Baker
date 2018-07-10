@@ -4,7 +4,7 @@ using UnityEngine.Rendering;
 using UnityEditor;
 using AnimationBaker.StateMachine.Nodes;
 using AnimationBaker.StateMachine.Variables;
-using XNodeEditor;
+using AnimationBaker.Utils.XNodeEditor;
 
 namespace AnimationBaker.StateMachine.Editor
 {

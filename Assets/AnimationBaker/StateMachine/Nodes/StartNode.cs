@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using XNode;
+using AnimationBaker.Utils.XNode;
 
 namespace AnimationBaker.StateMachine.Nodes
 {

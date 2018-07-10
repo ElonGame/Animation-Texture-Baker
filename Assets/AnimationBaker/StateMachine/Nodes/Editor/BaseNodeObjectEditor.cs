@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using AnimationBaker.StateMachine.Nodes;
-using AnimationBaker.StateMachine.Transitions;
 using AnimationBaker.StateMachine.Variables;
-using XNode;
+using AnimationBaker.Utils.XNode;
 
 namespace AnimationBaker.StateMachine.Nodes.Editor
 {
@@ -16,9 +15,9 @@ namespace AnimationBaker.StateMachine.Nodes.Editor
 
         public override void OnInspectorGUI()
         {
-            node = (BaseNode)target;
-            StateGraph graph = (StateGraph)node.graph;
-            if (node == null || graph == null)return;
+            node = (BaseNode) target;
+            StateGraph graph = (StateGraph) node.graph;
+            if (node == null || graph == null) return;
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(graph.name + " | " + node.name, EditorStyles.largeLabel);
             if (GUILayout.Button("Settings"))
@@ -27,7 +26,7 @@ namespace AnimationBaker.StateMachine.Nodes.Editor
             }
             EditorGUILayout.EndHorizontal();
 
-            if (!node.HasState)return;
+            if (!node.HasState) return;
             GUILayout.Space(8);
             EditorGUILayout.LabelField("Transitions", EditorStyles.largeLabel);
             GUILayout.Space(6);
@@ -35,7 +34,7 @@ namespace AnimationBaker.StateMachine.Nodes.Editor
             foreach (var port in node.InstanceOutputs)
             {
                 var count = port.ConnectionCount;
-                if (count == 0)continue;
+                if (count == 0) continue;
                 for (int i = 0; i < count; i++)
                 {
                     try
@@ -62,32 +61,32 @@ namespace AnimationBaker.StateMachine.Nodes.Editor
             {
                 DrawcontrolButtons(fromPort, toPort, nodePortHash, rect);
                 EditorGUILayout.LabelField("Rules");
-                foreach (var item in node.Rules)
-                {
-                    if (item.Key.Equals(toPort.node as BaseNode))
-                    {
-                        DrawRules(item);
-                    }
-                }
+                // foreach (var item in node.Rules)
+                // {
+                //     if (item.Key.Equals(toPort.node as BaseNode))
+                //     {
+                //         DrawRules(item);
+                //     }
+                // }
                 GUILayout.Space(4);
             }
             EditorGUILayout.EndVertical();
             EditorGUILayout.EndHorizontal();
         }
 
-        private void DrawRules(KeyValuePair<BaseNode, TransitionRules> item)
-        {
-            foreach (var rules in item.Value.Rules)
-            {
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField(item.Key.ToString());
-                if (GUILayout.Button("x", EditorStyles.miniButton, GUILayout.Width(24)))
-                {
+        // private void DrawRules(KeyValuePair<BaseNode, TransitionRules> item)
+        // {
+        //     foreach (var rules in item.Value.Rules)
+        //     {
+        //         EditorGUILayout.BeginHorizontal();
+        //         EditorGUILayout.LabelField(item.Key.ToString());
+        //         if (GUILayout.Button("x", EditorStyles.miniButton, GUILayout.Width(24)))
+        //         {
 
-                }
-                EditorGUILayout.EndHorizontal();
-            }
-        }
+        //         }
+        //         EditorGUILayout.EndHorizontal();
+        //     }
+        // }
 
         private void DrawcontrolButtons(NodePort fromPort, NodePort toPort, int toPortHash, Rect rect)
         {

@@ -4,11 +4,11 @@ using System.Linq;
 using UnityEngine;
 using UnityEditor;
 
-namespace XNodeEditor
+namespace AnimationBaker.Utils.XNodeEditor
 {
     /// <summary> Base class to derive custom Node Graph editors from. Use this to override how graphs are drawn in the editor. </summary>
-    [CustomNodeGraphEditor(typeof(XNode.NodeGraph))]
-    public class NodeGraphEditor : XNodeEditor.Internal.NodeEditorBase<NodeGraphEditor, NodeGraphEditor.CustomNodeGraphEditorAttribute, XNode.NodeGraph>
+    [CustomNodeGraphEditor(typeof(AnimationBaker.Utils.XNode.NodeGraph))]
+    public class NodeGraphEditor : AnimationBaker.Utils.XNodeEditor.Internal.NodeEditorBase<NodeGraphEditor, NodeGraphEditor.CustomNodeGraphEditorAttribute, AnimationBaker.Utils.XNode.NodeGraph>
     {
         /// <summary> The position of the window in screen space. </summary>
         public Rect position;
@@ -37,7 +37,7 @@ namespace XNodeEditor
         public virtual string GetNodeMenuName(Type type)
         {
             //Check if type has the CreateNodeMenuAttribute
-            XNode.Node.CreateNodeMenuAttribute attrib;
+            AnimationBaker.Utils.XNode.Node.CreateNodeMenuAttribute attrib;
             if (NodeEditorUtilities.GetAttrib(type, out attrib)) // Return custom path
                 return attrib.menuName;
             else // Return generated path
@@ -50,9 +50,9 @@ namespace XNodeEditor
         }
 
         /// <summary> Creates a copy of the original node in the graph </summary>
-        public XNode.Node CopyNode(XNode.Node original)
+        public AnimationBaker.Utils.XNode.Node CopyNode(AnimationBaker.Utils.XNode.Node original)
         {
-            XNode.Node node = target.CopyNode(original);
+            AnimationBaker.Utils.XNode.Node node = target.CopyNode(original);
             node.name = original.name;
             AssetDatabase.AddObjectToAsset(node, target);
             if (NodeEditorPreferences.GetSettings().autoSave) AssetDatabase.SaveAssets();
@@ -60,7 +60,7 @@ namespace XNodeEditor
         }
 
         /// <summary> Safely remove a node and all its connections. </summary>
-        public void RemoveNode(XNode.Node node)
+        public void RemoveNode(AnimationBaker.Utils.XNode.Node node)
         {
             UnityEngine.Object.DestroyImmediate(node, true);
             target.RemoveNode(node);
@@ -69,7 +69,7 @@ namespace XNodeEditor
 
         [AttributeUsage(AttributeTargets.Class)]
         public class CustomNodeGraphEditorAttribute : Attribute,
-        XNodeEditor.Internal.NodeEditorBase<NodeGraphEditor, NodeGraphEditor.CustomNodeGraphEditorAttribute, XNode.NodeGraph>.INodeEditorAttrib
+        AnimationBaker.Utils.XNodeEditor.Internal.NodeEditorBase<NodeGraphEditor, NodeGraphEditor.CustomNodeGraphEditorAttribute, AnimationBaker.Utils.XNode.NodeGraph>.INodeEditorAttrib
         {
             private Type inspectedType;
             public string editorPrefsKey;

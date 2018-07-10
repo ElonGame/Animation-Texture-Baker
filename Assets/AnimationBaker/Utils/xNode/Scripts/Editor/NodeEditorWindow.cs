@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.Callbacks;
 
-namespace XNodeEditor
+namespace AnimationBaker.Utils.XNodeEditor
 {
     [InitializeOnLoad]
     public partial class NodeEditorWindow : EditorWindow
@@ -11,11 +11,11 @@ namespace XNodeEditor
         public static NodeEditorWindow current;
 
         /// <summary> Stores node positions for all nodePorts. </summary>
-        public Dictionary<XNode.NodePort, Rect> portConnectionPoints { get { return _portConnectionPoints; } }
-        private Dictionary<XNode.NodePort, Rect> _portConnectionPoints = new Dictionary<XNode.NodePort, Rect>();
-        public Dictionary<XNode.Node, Vector2> nodeSizes { get { return _nodeSizes; } }
-        private Dictionary<XNode.Node, Vector2> _nodeSizes = new Dictionary<XNode.Node, Vector2>();
-        public XNode.NodeGraph graph;
+        public Dictionary<AnimationBaker.Utils.XNode.NodePort, Rect> portConnectionPoints { get { return _portConnectionPoints; } }
+        private Dictionary<AnimationBaker.Utils.XNode.NodePort, Rect> _portConnectionPoints = new Dictionary<AnimationBaker.Utils.XNode.NodePort, Rect>();
+        public Dictionary<AnimationBaker.Utils.XNode.Node, Vector2> nodeSizes { get { return _nodeSizes; } }
+        private Dictionary<AnimationBaker.Utils.XNode.Node, Vector2> _nodeSizes = new Dictionary<AnimationBaker.Utils.XNode.Node, Vector2>();
+        public AnimationBaker.Utils.XNode.NodeGraph graph;
         public Vector2 panOffset { get { return _panOffset; } set { _panOffset = value; Repaint(); } }
         private Vector2 _panOffset;
         public float zoom { get { return _zoom; } set { _zoom = Mathf.Clamp(value, 1f, 5f); Repaint(); } }
@@ -55,7 +55,7 @@ namespace XNodeEditor
             if (string.IsNullOrEmpty(path)) return;
             else
             {
-                XNode.NodeGraph existingGraph = AssetDatabase.LoadAssetAtPath<XNode.NodeGraph>(path);
+                AnimationBaker.Utils.XNode.NodeGraph existingGraph = AssetDatabase.LoadAssetAtPath<AnimationBaker.Utils.XNode.NodeGraph>(path);
                 if (existingGraph != null) AssetDatabase.DeleteAsset(path);
                 AssetDatabase.CreateAsset(graph, path);
                 EditorUtility.SetDirty(graph);
@@ -99,7 +99,7 @@ namespace XNodeEditor
             return new Vector2(xOffset, yOffset);
         }
 
-        public void SelectNode(XNode.Node node, bool add)
+        public void SelectNode(AnimationBaker.Utils.XNode.Node node, bool add)
         {
             if (add)
             {
@@ -110,7 +110,7 @@ namespace XNodeEditor
             else Selection.objects = new Object[] { node };
         }
 
-        public void DeselectNode(XNode.Node node)
+        public void DeselectNode(AnimationBaker.Utils.XNode.Node node)
         {
             List<Object> selection = new List<Object>(Selection.objects);
             selection.Remove(node);
@@ -120,7 +120,7 @@ namespace XNodeEditor
         [OnOpenAsset(0)]
         public static bool OnOpen(int instanceID, int line)
         {
-            XNode.NodeGraph nodeGraph = EditorUtility.InstanceIDToObject(instanceID) as XNode.NodeGraph;
+            AnimationBaker.Utils.XNode.NodeGraph nodeGraph = EditorUtility.InstanceIDToObject(instanceID) as AnimationBaker.Utils.XNode.NodeGraph;
             if (nodeGraph != null)
             {
                 NodeEditorWindow w = GetWindow(typeof(NodeEditorWindow), false, "Animation Baker", true) as NodeEditorWindow;

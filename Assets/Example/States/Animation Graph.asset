@@ -11,7 +11,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6cf40de361d327f429cd45de039d9fb6, type: 3}
   m_Name: Animation Graph
   m_EditorClassIdentifier: 
-  nodes: []
+  nodes:
+  - {fileID: 114122164073653472}
+  - {fileID: 114650694951163818}
   Prefab: {fileID: 0}
   AnimationClips: []
   MachineVariables: []
@@ -20,3 +22,61 @@ MonoBehaviour:
   Vertices: 0
   PrefabHashCode: 0
   PrefabAnimation: {fileID: 0}
+--- !u!114 &114122164073653472
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d0130d41888c1a48bb8d4cf1310976f, type: 3}
+  m_Name: End
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 300, y: 0}
+  ports:
+    keys:
+    - Input
+    values:
+    - _fieldName: Input
+      _node: {fileID: 114122164073653472}
+      _typeQualifiedName: AnimationBaker.StateMachine.Nodes.BaseNode+Empty, Assembly-CSharp,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      connections: []
+      _direction: 0
+      _connectionType: 0
+      _dynamic: 0
+  Duration: 0
+  RulesToggles:
+    keys: 
+    values: 
+--- !u!114 &114650694951163818
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b14cea0540360349b44b01a32e15f28, type: 3}
+  m_Name: Start
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: -300, y: 0}
+  ports:
+    keys:
+    - Output
+    values:
+    - _fieldName: Output
+      _node: {fileID: 114650694951163818}
+      _typeQualifiedName: AnimationBaker.StateMachine.Nodes.BaseNode+Empty, Assembly-CSharp,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      connections: []
+      _direction: 1
+      _connectionType: 1
+      _dynamic: 0
+  Duration: 0
+  RulesToggles:
+    keys: 
+    values: 
