@@ -64,7 +64,7 @@ namespace XNode
         /// <summary> It is recommended not to modify these at hand. Instead, see <see cref="InputAttribute"/> and <see cref="OutputAttribute"/> </summary>
         [SerializeField] private NodePortDictionary ports = new NodePortDictionary();
 
-        protected void OnEnable()
+        protected virtual void OnEnable()
         {
             UpdateStaticPorts();
             Init();

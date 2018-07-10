@@ -8,8 +8,8 @@ namespace AnimationBaker.StateMachine.Transitions
     [System.Serializable]
     public class TransitionRules : ScriptableObject
     {
-        public BaseNode node;
-        [SerializeField]
+        public BaseNode fromNode;
+        public BaseNode toNode;
         public List<TransitionRule> Rules = new List<TransitionRule>();
     }
 

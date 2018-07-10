@@ -16,9 +16,9 @@ namespace AnimationBaker.StateMachine.Nodes.Editor
 
         public override void OnInspectorGUI()
         {
-            node = (BaseNode) target;
-            StateGraph graph = (StateGraph) node.graph;
-            if (node == null || graph == null) return;
+            node = (BaseNode)target;
+            StateGraph graph = (StateGraph)node.graph;
+            if (node == null || graph == null)return;
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(graph.name + " | " + node.name, EditorStyles.largeLabel);
             if (GUILayout.Button("Settings"))
@@ -27,7 +27,7 @@ namespace AnimationBaker.StateMachine.Nodes.Editor
             }
             EditorGUILayout.EndHorizontal();
 
-            if (!node.HasState) return;
+            if (!node.HasState)return;
             GUILayout.Space(8);
             EditorGUILayout.LabelField("Transitions", EditorStyles.largeLabel);
             GUILayout.Space(6);
@@ -35,7 +35,7 @@ namespace AnimationBaker.StateMachine.Nodes.Editor
             foreach (var port in node.InstanceOutputs)
             {
                 var count = port.ConnectionCount;
-                if (count == 0) continue;
+                if (count == 0)continue;
                 for (int i = 0; i < count; i++)
                 {
                     try
@@ -83,7 +83,7 @@ namespace AnimationBaker.StateMachine.Nodes.Editor
                 EditorGUILayout.LabelField(item.Key.ToString());
                 if (GUILayout.Button("x", EditorStyles.miniButton, GUILayout.Width(24)))
                 {
-                    node.RemoveRule(item.Key, item.Value);
+
                 }
                 EditorGUILayout.EndHorizontal();
             }
@@ -100,13 +100,6 @@ namespace AnimationBaker.StateMachine.Nodes.Editor
             {
                 node.RemoveVariables(toPort.node as BaseNode);
                 fromPort.Disconnect(toPort);
-            }
-            var addButtonRect = removeBtnRect;
-            addButtonRect.xMin = removeBtnRect.xMin - 26;
-            addButtonRect.width = 24;
-            if (GUI.Button(addButtonRect, "+"))
-            {
-                node.AddRule(toPort.node as BaseNode);
             }
         }
 

@@ -135,11 +135,7 @@ namespace AnimationBaker.StateMachine.Editor
         private BaseNode CreateNode(Type type, AnimationClip clip = null, string name = "", int clipIndex = 0)
         {
             var node = graph.AddNewClip(type, clip, name, clipIndex);
-            AssetDatabase.AddObjectToAsset(node, graph);
-            AssetDatabase.SaveAssets();
             Repaint();
-            EditorUtility.SetDirty(graph);
-            AssetDatabase.SaveAssets();
             return node;
         }
 
@@ -167,9 +163,9 @@ namespace AnimationBaker.StateMachine.Editor
                     labelRect.yMin -= 1;
                     GUI.Label(labelRect, "Variable Name", EditorStyles.miniBoldLabel);
                 }
-                else if (variable.name != "_V" + variable.Name)
+                else if (variable.name != "VA_" + variable.Name)
                 {
-                    variable.name = "_V" + variable.Name;
+                    variable.name = "VA_" + variable.Name;
                     EditorUtility.SetDirty(variable);
                 }
                 switch (variable.VariableType)
@@ -209,20 +205,6 @@ namespace AnimationBaker.StateMachine.Editor
             AssetDatabase.SaveAssets();
             Repaint();
 
-        }
-
-        private void Awake()
-        {
-            if (graph.nodes.Count == 0 && AssetDatabase.IsMainAsset(graph))
-            {
-                CreateNode(typeof(EndNode), null, "End");
-                CreateNode(typeof(StartNode), null, "Start");
-                AssetDatabase.SaveAssets();
-                var endNode = graph.nodes[0];
-                var pos = endNode.position;
-                pos.x += 300;
-                endNode.position = pos;
-            }
         }
 
         private bool ConfirmImportState()

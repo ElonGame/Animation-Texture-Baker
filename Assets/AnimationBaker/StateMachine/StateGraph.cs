@@ -81,6 +81,29 @@ namespace AnimationBaker.StateMachine
 
 		public void OnBeforeSerialize() { }
 
+		protected void OnValidate()
+		{
+#if UNITY_EDITOR
+			if (nodes.Count == 0 && AssetDatabase.IsMainAsset(this))
+			{
+				var endNode = AddNewClip(typeof(EndNode), null, "End");
+				var startNode = AddNewClip(typeof(StartNode), null, "Start");
+				AssetDatabase.SaveAssets();
+				var endPos = endNode.position;
+				endPos.x += 300;
+				endNode.position = endPos;
+				var startPos = startNode.position;
+				startPos.x -= 300;
+				startNode.position = startPos;
+				AssetDatabase.AddObjectToAsset(nodes[0], this);
+				AssetDatabase.AddObjectToAsset(nodes[1], this);
+				AssetDatabase.SaveAssets();
+				EditorUtility.SetDirty(this);
+				AssetDatabase.SaveAssets();
+			}
+#endif
+		}
+
 		public void OnAfterDeserialize()
 		{
 			foreach (BaseNode node in nodes)

@@ -60,16 +60,21 @@ namespace AnimationBaker.StateMachine.Nodes
             Rules.Remove(node);
         }
 
+        // private void OnValidate()
+        // {
+        // }
+
         public void AddRule(BaseNode node)
         {
             TransitionRules rules = TransitionRules.CreateInstance<TransitionRules>();
-            rules.name = "_T" + name + node.name;
-            rules.node = this;
+            rules.name = "TR_" + name + node.name;
+            rules.fromNode = this;
+            rules.toNode = node;
             var rule = new TransitionRule();
             rules.Rules.Add(rule);
             Rules[node] = rules;
 #if UNITY_EDITOR
-            AssetDatabase.AddObjectToAsset(rules, this as StateNode);
+            AssetDatabase.AddObjectToAsset(rules, this);
             AssetDatabase.SaveAssets();
 #endif
         }
@@ -80,6 +85,37 @@ namespace AnimationBaker.StateMachine.Nodes
 #if UNITY_EDITOR
             UnityEngine.Object.DestroyImmediate(rules, true);
             AssetDatabase.SaveAssets();
+#endif
+        }
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+#if UNITY_EDITOR
+            var assets = AssetDatabase.LoadAllAssetRepresentationsAtPath(AssetDatabase.GetAssetPath(this));
+            foreach (var asset in assets)
+            {
+                var transitionRules = asset as TransitionRules;
+                if (transitionRules != null)
+                {
+                    if (transitionRules.fromNode == this)
+                    {
+                        Rules[transitionRules.toNode] = transitionRules;
+                    }
+                }
+            }
+            foreach (var port in Outputs)
+            {
+                for (int i = 0; i < port.ConnectionCount; i++)
+                {
+                    var connection = port.GetConnection(i);
+                    var node = connection.node as BaseNode;
+                    if (!Rules.ContainsKey(node))
+                    {
+                        AddRule(node);
+                    }
+                }
+            }
 #endif
         }
     }
