@@ -2,31 +2,22 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 using AnimationBaker.StateMachine.XNode;
 
 namespace AnimationBaker.StateMachine.Nodes
 {
     [System.Serializable]
-    [NodeTint("#767d80")]
-    public class StateNode : BaseNode
+    [NodeTint("#005455")]
+    public class AnyNode : BaseNode
     {
         public override bool HasState { get => true; }
 
+        public Empty Output;
+
         public override NodeType NodeType
         {
-            get => NodeType.State;
+            get => NodeType.Any;
             set { }
-        }
-
-        public void Rename(string newName)
-        {
-#if UNITY_EDITOR
-            name = newName;
-            AssetDatabase.ImportAsset(AssetDatabase.GetAssetPath(this));
-#endif
         }
     }
 }

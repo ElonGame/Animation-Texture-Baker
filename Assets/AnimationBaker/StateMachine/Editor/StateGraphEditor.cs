@@ -1,15 +1,17 @@
 using System;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEditor;
 using AnimationBaker.StateMachine.Nodes;
-using AnimationBaker.StateMachine.Variables;
-using AnimationBaker.Utils.XNodeEditor;
+using AnimationBaker.StateMachine.XNode;
+using AnimationBaker.StateMachine.XNodeEditor;
+using UEditor = UnityEditor.Editor;
 
 namespace AnimationBaker.StateMachine.Editor
 {
     [CustomEditor(typeof(StateGraph))]
-    public class StateGraphEditor : UnityEditor.Editor
+    public partial class StateGraphEditor : UnityEditor.Editor
     {
 
         StateGraph _graph;
@@ -28,11 +30,23 @@ namespace AnimationBaker.StateMachine.Editor
         public override void OnInspectorGUI()
         {
             if (graph == null) return;
+            EditorGUI.BeginChangeCheck();
+            DrawPendingSave();
             DrawPrefab();
             GUILayout.Space(8);
             DrawAnimationClips();
             DrawVariables();
+            // DrawPreviewGUI();
+            if (EditorGUI.EndChangeCheck())
+            {
+                // EditorUtility.SetDirty(graph);
+                graph.IsDirty = true;
+                // AssetDatabase.SaveAssets();
+                // RepaintGraph();
+            }
         }
+
+        private void DrawPendingSave() { }
 
         private void DrawPrefab()
         {
@@ -69,21 +83,12 @@ namespace AnimationBaker.StateMachine.Editor
         private void DrawAnimationClips()
         {
             EditorGUILayout.LabelField("Animation Clips", EditorStyles.largeLabel);
-
-            var addClipRect = GUILayoutUtility.GetLastRect();
-            addClipRect.xMin = addClipRect.width - 36;
-            addClipRect.width = 50;
-            addClipRect.height = 18;
-            if (GUI.Button(addClipRect, "Add", EditorStyles.miniButton))
-            {
-                CreateNode(typeof(StateNode));
-            }
-
             if (graph.HasAnimation)
             {
-                var importClipRect = addClipRect;
-                importClipRect.xMin -= 52;
+                var importClipRect = GUILayoutUtility.GetLastRect();
+                importClipRect.xMin = importClipRect.width - 36;
                 importClipRect.width = 50;
+                importClipRect.height = 18;
                 if (GUI.Button(importClipRect, "Import", EditorStyles.miniButton) && ConfirmImportState())
                 {
                     ImportAnimationClips(graph.Prefab);
@@ -97,6 +102,10 @@ namespace AnimationBaker.StateMachine.Editor
                 var rect = EditorGUILayout.BeginHorizontal();
                 GUILayout.Space(0);
                 clip.Name = EditorGUILayout.TextField(clip.Name, GUILayout.MinWidth(100));
+                if (clip.Node != null && clip.Name != clip.Node.name)
+                {
+                    clip.Node.name = clip.Name;
+                }
 
                 clip.WrapMode = (WrapMode) EditorGUILayout.EnumPopup(clip.WrapMode, GUILayout.MaxWidth(110));
                 if (GUILayout.Button(EditorGUIUtility.IconContent("audio mixer.png"), GUILayout.Width(20)))
@@ -107,6 +116,10 @@ namespace AnimationBaker.StateMachine.Editor
                 if (GUILayout.Button("-", GUILayout.Width(20)) && ConfirmRemoveClip())
                 {
                     graph.RemoveClip(clip);
+                    if (clip.Node)
+                    {
+                        UnityEngine.Object.DestroyImmediate(clip.Node, true);
+                    }
                     return;
                 }
                 EditorGUILayout.EndHorizontal();
@@ -128,14 +141,20 @@ namespace AnimationBaker.StateMachine.Editor
             var clips = AnimationUtility.GetAnimationClips(prefab);
             for (int i = 0; i < clips.Length; i++)
             {
-                CreateNode(typeof(StateNode), clips[i], clips[i].name, i);
+                if (!graph.HasNode(clips[i].name))
+                    CreateNode(typeof(StateNode), clips[i], clips[i].name, i);
             }
+        }
+
+        private void RepaintGraph()
+        {
+            EditorWindow.GetWindow(typeof(NodeEditorWindow)).Repaint();
         }
 
         private BaseNode CreateNode(Type type, AnimationClip clip = null, string name = "", int clipIndex = 0)
         {
             var node = graph.AddNewClip(type, clip, name, clipIndex);
-            Repaint();
+            AssetDatabase.AddObjectToAsset(node, graph);
             return node;
         }
 
@@ -148,10 +167,10 @@ namespace AnimationBaker.StateMachine.Editor
             addVariableRect.height = 18;
             if (GUI.Button(addVariableRect, "Add", EditorStyles.miniButton))
             {
-                AddVariable();
+                graph.AddVariable();
             }
             GUILayout.Space(8);
-            foreach (var variable in graph.MachineVariables)
+            foreach (var variable in graph.variables)
             {
                 var rect = EditorGUILayout.BeginHorizontal();
                 GUILayout.Space(0);
@@ -162,11 +181,6 @@ namespace AnimationBaker.StateMachine.Editor
                     labelRect.xMin = 16;
                     labelRect.yMin -= 1;
                     GUI.Label(labelRect, "Variable Name", EditorStyles.miniBoldLabel);
-                }
-                else if (variable.name != "VA_" + variable.Name)
-                {
-                    variable.name = "VA_" + variable.Name;
-                    EditorUtility.SetDirty(variable);
                 }
                 switch (variable.VariableType)
                 {
@@ -186,25 +200,22 @@ namespace AnimationBaker.StateMachine.Editor
                 variable.VariableType = (VariableType) EditorGUILayout.EnumPopup(variable.VariableType, GUILayout.MaxWidth(80));
                 if (GUILayout.Button("-", EditorStyles.miniButton, GUILayout.Width(20)) && ConfirmRemoveVariable())
                 {
-                    graph.MachineVariables.Remove(variable);
+                    graph.RemoveVariable(variable);
                     return;
                 }
                 EditorGUILayout.EndHorizontal();
             }
-            if (graph.MachineVariables.Count > 0)
+            if (graph.variables.Count > 0)
                 GUILayout.Space(8);
         }
 
         private void AddVariable()
         {
-            MachineVariable variable = ScriptableObject.CreateInstance<MachineVariable>();
+            var variable = new NodeGraphVariable();
             variable.VariableType = VariableType.Boolean;
             variable.Name = "";
-            graph.MachineVariables.Add(variable);
-            AssetDatabase.AddObjectToAsset(variable, graph);
-            AssetDatabase.SaveAssets();
-            Repaint();
 
+            graph.variables.Add(variable);
         }
 
         private bool ConfirmImportState()
@@ -220,6 +231,11 @@ namespace AnimationBaker.StateMachine.Editor
         private bool ConfirmRemoveClip()
         {
             return EditorUtility.DisplayDialog("Remove clip?", "Are you sure you want to remove this clip?", "Yes", "No");
+        }
+
+        public override bool HasPreviewGUI()
+        {
+            return true;
         }
     }
 }

@@ -5,7 +5,8 @@ using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using AnimationBaker.StateMachine.Nodes;
-using AnimationBaker.Utils.XNodeEditor;
+using AnimationBaker.StateMachine.XNode;
+using AnimationBaker.StateMachine.XNodeEditor;
 
 namespace AnimationBaker.StateMachine.Editor
 {
@@ -16,8 +17,6 @@ namespace AnimationBaker.StateMachine.Editor
 		public override void OnHeaderGUI()
 		{
 			GUI.color = Color.white;
-			BaseNode node = target as BaseNode;
-			StateGraph graph = node.graph as StateGraph;
 			base.OnHeaderGUI();
 		}
 
@@ -28,11 +27,27 @@ namespace AnimationBaker.StateMachine.Editor
 
 			base.OnBodyGUI();
 
-			if (node.HasState && node.InstanceInputs.Count() > 0 && node.InstanceOutputs.Count() > 0)
+			NodePort input = null;
+			if (node.InstanceInputs.Count() > 0)
 			{
-				var input = node.InstanceInputs.First();
-				var output = node.InstanceOutputs.First();
-				NodeEditorGUILayout.PortPair(input, output);
+				input = node.InstanceInputs.First();
+			}
+			NodePort output = null;
+			if (node.InstanceOutputs.Count() > 0)
+			{
+				output = node.InstanceOutputs.First();
+			}
+			if (input == null)
+			{
+				NodeEditorGUILayout.VerticalPortField(null, output);
+			}
+			else if (output == null)
+			{
+				NodeEditorGUILayout.VerticalPortField(null, input);
+			}
+			else
+			{
+				NodeEditorGUILayout.VerticalPortPair(input, output);
 			}
 		}
 	}

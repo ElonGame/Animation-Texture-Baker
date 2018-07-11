@@ -7,8 +7,8 @@ using UnityEngine.Rendering;
 using UnityEditor;
 #endif
 using AnimationBaker.StateMachine.Nodes;
-using AnimationBaker.StateMachine.Variables;
-using AnimationBaker.Utils.XNode;
+using AnimationBaker.StateMachine.XNode;
+// using static AnimationBaker.StateMachine.XNode.Node;
 
 namespace AnimationBaker.StateMachine
 {
@@ -17,12 +17,11 @@ namespace AnimationBaker.StateMachine
 	{
 		public GameObject Prefab;
 		public List<ClipData> AnimationClips = new List<ClipData>();
-		public List<MachineVariable> MachineVariables = new List<MachineVariable>();
 		public ShadowCastingMode ShadowCastingMode = ShadowCastingMode.On;
 		public bool ReceivesShadows = true;
 		public int Vertices = 0;
 		public int PrefabHashCode = 0;
-		public Animation PrefabAnimation = null;
+		public Animation PrefabAnimation { get; set; }
 		public bool HasAnimation
 		{
 			get
@@ -67,42 +66,13 @@ namespace AnimationBaker.StateMachine
 
 		public void RemoveClip(ClipData clip)
 		{
-#if UNITY_EDITOR
 			if (clip.Node)
-			{
-				UnityEngine.Object.DestroyImmediate(clip.Node, true);
 				RemoveNode(clip.Node);
-				AssetDatabase.SaveAssets();
-			}
-#endif
 			AnimationClips.Remove(clip);
-			Selection.activeObject = this;
+			// Selection.activeObject = this;
 		}
 
 		public void OnBeforeSerialize() { }
-
-		protected void OnValidate()
-		{
-#if UNITY_EDITOR
-			if (nodes.Count == 0 && AssetDatabase.IsMainAsset(this))
-			{
-				var endNode = AddNewClip(typeof(EndNode), null, "End");
-				var startNode = AddNewClip(typeof(StartNode), null, "Start");
-				AssetDatabase.SaveAssets();
-				var endPos = endNode.position;
-				endPos.x += 300;
-				endNode.position = endPos;
-				var startPos = startNode.position;
-				startPos.x -= 300;
-				startNode.position = startPos;
-				AssetDatabase.AddObjectToAsset(nodes[0], this);
-				AssetDatabase.AddObjectToAsset(nodes[1], this);
-				AssetDatabase.SaveAssets();
-				EditorUtility.SetDirty(this);
-				AssetDatabase.SaveAssets();
-			}
-#endif
-		}
 
 		public void OnAfterDeserialize()
 		{
@@ -110,21 +80,56 @@ namespace AnimationBaker.StateMachine
 			{
 				node.graph = this;
 			}
-			foreach (var variable in MachineVariables)
-			{
-				variable.graph = this;
-			}
 		}
-	}
 
-	[System.Serializable]
-	public class ClipData
-	{
-		public int Index;
-		public float Duration;
-		public float FrameRate;
-		public StateNode Node;
-		public string Name;
-		public WrapMode WrapMode;
+		public override void Boot()
+		{
+			if (!HasNode("End"))
+			{
+				var endNode = AddNewClip(typeof(EndNode), null, "End");
+				var endPos = endNode.position;
+				endPos.x += 300;
+				endNode.position = endPos;
+				endNode.AddInstanceInput(typeof(BaseNode.Empty), Node.ConnectionType.Multiple, "Input");
+#if UNITY_EDITOR
+				AssetDatabase.AddObjectToAsset(endNode, this);
+				AssetDatabase.SaveAssets();
+#endif
+			}
+			if (!HasNode("Start"))
+			{
+				var startNode = AddNewClip(typeof(StartNode), null, "Start");
+				var startPos = startNode.position;
+				startPos.x -= 300;
+				startNode.position = startPos;
+				startNode.AddInstanceOutput(typeof(BaseNode.Empty), Node.ConnectionType.Override, "Output");
+#if UNITY_EDITOR
+				AssetDatabase.AddObjectToAsset(startNode, this);
+				AssetDatabase.SaveAssets();
+#endif
+			}
+			if (!HasNode("Any"))
+			{
+				var anyNode = AddNewClip(typeof(AnyNode), null, "Any State");
+				anyNode.AddInstanceOutput(typeof(BaseNode.Empty), Node.ConnectionType.Multiple, "Output");
+#if UNITY_EDITOR
+				AssetDatabase.AddObjectToAsset(anyNode, this);
+				AssetDatabase.SaveAssets();
+#endif
+			}
+			booted = true;
+		}
+
+		public bool HasNode(string name)
+		{
+			foreach (var node in nodes)
+			{
+				if (node.name == name)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
 	}
 }

@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using AnimationBaker.Utils.XNode;
+using AnimationBaker.StateMachine.XNode;
 
 namespace AnimationBaker.StateMachine.Nodes
 {
@@ -10,7 +10,6 @@ namespace AnimationBaker.StateMachine.Nodes
     [NodeTint("#008000")]
     public class StartNode : BaseNode
     {
-        [Output(ShowBackingValue.Never, ConnectionType.Override)]
         public Empty Output;
 
         public override NodeType NodeType
