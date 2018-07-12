@@ -30,19 +30,27 @@ namespace AnimationBaker.StateMachine.Editor
         public override void OnInspectorGUI()
         {
             if (graph == null) return;
+            if (!AssetDatabase.IsMainAsset(graph)) return;
+            if (graph.startNode == null) return;
+            if (graph.endNode == null) return;
+            if (graph.anyNode == null) return;
             EditorGUI.BeginChangeCheck();
             DrawPendingSave();
             DrawPrefab();
             GUILayout.Space(8);
-            DrawAnimationClips();
+            DrawAnimations();
             DrawVariables();
-            // DrawPreviewGUI();
+            if (HasPreviewGUI())
+            {
+                PreviewEventListeners();
+            }
             if (EditorGUI.EndChangeCheck())
             {
-                // EditorUtility.SetDirty(graph);
                 graph.IsDirty = true;
-                // AssetDatabase.SaveAssets();
-                // RepaintGraph();
+            }
+            if (graph.isPlaying)
+            {
+                Repaint();
             }
         }
 
@@ -55,11 +63,8 @@ namespace AnimationBaker.StateMachine.Editor
             var prefab = (GameObject) EditorGUILayout.ObjectField(graph.Prefab, typeof(GameObject), false);
             if (prefab != null && prefab.GetHashCode() != graph.PrefabHashCode)
             {
+                graph.PrefabHashCode = prefab.GetHashCode();
                 graph.SetPrefab(prefab);
-            }
-            else
-            {
-                graph.PrefabHashCode = 0;
             }
 
             EditorGUILayout.EndHorizontal();
@@ -80,7 +85,7 @@ namespace AnimationBaker.StateMachine.Editor
             EditorGUILayout.EndHorizontal();
         }
 
-        private void DrawAnimationClips()
+        private void DrawAnimations()
         {
             EditorGUILayout.LabelField("Animation Clips", EditorStyles.largeLabel);
             if (graph.HasAnimation)
@@ -96,30 +101,24 @@ namespace AnimationBaker.StateMachine.Editor
             }
 
             GUILayout.Space(8);
-            foreach (var clip in graph.AnimationClips)
+            foreach (BaseNode node in graph.nodes)
             {
+                if (node.NodeType != NodeType.State) continue;
                 EditorGUILayout.BeginVertical();
                 var rect = EditorGUILayout.BeginHorizontal();
                 GUILayout.Space(0);
-                clip.Name = EditorGUILayout.TextField(clip.Name, GUILayout.MinWidth(100));
-                if (clip.Node != null && clip.Name != clip.Node.name)
-                {
-                    clip.Node.name = clip.Name;
-                }
 
-                clip.WrapMode = (WrapMode) EditorGUILayout.EnumPopup(clip.WrapMode, GUILayout.MaxWidth(110));
+                EditorGUILayout.LabelField(node.name, GUILayout.MinWidth(100));
+                node.WrapMode = (WrapMode) EditorGUILayout.EnumPopup(node.WrapMode, GUILayout.MaxWidth(110));
                 if (GUILayout.Button(EditorGUIUtility.IconContent("audio mixer.png"), GUILayout.Width(20)))
                 {
-                    Selection.activeObject = clip.Node;
+                    Selection.activeObject = node;
                     return;
                 }
-                if (GUILayout.Button("-", GUILayout.Width(20)) && ConfirmRemoveClip())
+                if (GUILayout.Button("-", GUILayout.Width(20)) && ConfirmRemoveAnimations())
                 {
-                    graph.RemoveClip(clip);
-                    if (clip.Node)
-                    {
-                        UnityEngine.Object.DestroyImmediate(clip.Node, true);
-                    }
+                    graph.RemoveNode(node);
+                    UnityEngine.Object.DestroyImmediate(node, true);
                     return;
                 }
                 EditorGUILayout.EndHorizontal();
@@ -128,21 +127,19 @@ namespace AnimationBaker.StateMachine.Editor
                 labelRect.yMin += 16;
                 labelRect.height = 14;
                 GUILayout.Space(14);
-                GUI.Label(labelRect, "Duration: " + clip.Duration.ToString("N2") + "s  Frame Rate: " + clip.FrameRate, EditorStyles.miniLabel);
+                GUI.Label(labelRect, "Duration: " + node.Duration.ToString("N2") + "s  Frame Rate: " + node.FrameRate, EditorStyles.miniLabel);
 
                 EditorGUILayout.EndVertical();
             }
-            if (graph.AnimationClips.Count > 0)
-                GUILayout.Space(8);
+            GUILayout.Space(8);
         }
 
         private void ImportAnimationClips(GameObject prefab)
         {
-            var clips = AnimationUtility.GetAnimationClips(prefab);
-            for (int i = 0; i < clips.Length; i++)
+            foreach (AnimationState state in graph.PrefabAnimation)
             {
-                if (!graph.HasNode(clips[i].name))
-                    CreateNode(typeof(StateNode), clips[i], clips[i].name, i);
+                if (!graph.HasNode(state.name))
+                    CreateNode(typeof(StateNode), state, state.name);
             }
         }
 
@@ -151,9 +148,9 @@ namespace AnimationBaker.StateMachine.Editor
             EditorWindow.GetWindow(typeof(NodeEditorWindow)).Repaint();
         }
 
-        private BaseNode CreateNode(Type type, AnimationClip clip = null, string name = "", int clipIndex = 0)
+        private BaseNode CreateNode(Type type, AnimationState state = null, string name = "")
         {
-            var node = graph.AddNewClip(type, clip, name, clipIndex);
+            var node = graph.AddNewAnimation(type, state, name);
             AssetDatabase.AddObjectToAsset(node, graph);
             return node;
         }
@@ -167,15 +164,19 @@ namespace AnimationBaker.StateMachine.Editor
             addVariableRect.height = 18;
             if (GUI.Button(addVariableRect, "Add", EditorStyles.miniButton))
             {
-                graph.AddVariable();
+                var variable = graph.AddVariable();
+                variable.VariableType = VariableType.Boolean;
+                variable.name = "";
+                AssetDatabase.AddObjectToAsset(variable, graph);
+                graph.IsDirty = true;
             }
             GUILayout.Space(8);
             foreach (var variable in graph.variables)
             {
                 var rect = EditorGUILayout.BeginHorizontal();
                 GUILayout.Space(0);
-                variable.Name = GUILayout.TextField(variable.Name, GUILayout.MinWidth(100));
-                if (string.IsNullOrEmpty(variable.Name))
+                variable.name = GUILayout.TextField(variable.name, GUILayout.MinWidth(100));
+                if (string.IsNullOrEmpty(variable.name))
                 {
                     var labelRect = rect;
                     labelRect.xMin = 16;
@@ -186,12 +187,24 @@ namespace AnimationBaker.StateMachine.Editor
                 {
                     case VariableType.Boolean:
                         variable.DefaultBoolVal = GUILayout.Toggle(variable.DefaultBoolVal, new GUIContent(), GUILayout.Width(50));
+                        if (!graph.isPlaying)
+                        {
+                            variable.RuntimeBoolVal = variable.DefaultBoolVal;
+                        }
                         break;
                     case VariableType.Float:
                         variable.DefaultFloatVal = EditorGUILayout.FloatField(variable.DefaultFloatVal, GUILayout.Width(50));
+                        if (!graph.isPlaying)
+                        {
+                            variable.RuntimeFloatVal = variable.DefaultFloatVal;
+                        }
                         break;
                     case VariableType.Integer:
                         variable.DefaultIntVal = EditorGUILayout.IntField(variable.DefaultIntVal, GUILayout.Width(50));
+                        if (!graph.isPlaying)
+                        {
+                            variable.RuntimeIntVal = variable.DefaultIntVal;
+                        }
                         break;
                     default:
                         GUILayout.Space(54);
@@ -201,21 +214,13 @@ namespace AnimationBaker.StateMachine.Editor
                 if (GUILayout.Button("-", EditorStyles.miniButton, GUILayout.Width(20)) && ConfirmRemoveVariable())
                 {
                     graph.RemoveVariable(variable);
+                    DestroyImmediate(variable, true);
                     return;
                 }
                 EditorGUILayout.EndHorizontal();
             }
             if (graph.variables.Count > 0)
                 GUILayout.Space(8);
-        }
-
-        private void AddVariable()
-        {
-            var variable = new NodeGraphVariable();
-            variable.VariableType = VariableType.Boolean;
-            variable.Name = "";
-
-            graph.variables.Add(variable);
         }
 
         private bool ConfirmImportState()
@@ -225,17 +230,17 @@ namespace AnimationBaker.StateMachine.Editor
 
         private bool ConfirmRemoveVariable()
         {
-            return EditorUtility.DisplayDialog("Remove variable?", "Are you sure you want to remove this variable?", "Yes", "No");
+            return EditorUtility.DisplayDialog("Remove Variable?", "Are you sure you want to remove this variable?", "Yes", "No");
         }
 
-        private bool ConfirmRemoveClip()
+        private bool ConfirmRemoveAnimations()
         {
-            return EditorUtility.DisplayDialog("Remove clip?", "Are you sure you want to remove this clip?", "Yes", "No");
+            return EditorUtility.DisplayDialog("Remove Animations?", "Are you sure you want to remove this Animations?", "Yes", "No");
         }
 
         public override bool HasPreviewGUI()
         {
-            return true;
+            return AssetDatabase.IsMainAsset(graph);
         }
     }
 }

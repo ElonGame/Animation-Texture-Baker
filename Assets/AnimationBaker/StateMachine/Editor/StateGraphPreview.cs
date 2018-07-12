@@ -15,9 +15,15 @@ namespace AnimationBaker.StateMachine.Editor
         PreviewRenderUtility previewRenderUtility;
         GameObject previewObject;
         int lastPreviewHash;
-        bool isPlaying = false;
         Camera previewCamera;
         float goHeight;
+        Rect previewRect;
+        float deltaTime = 0;
+        float cameraZoom = 2;
+        Bounds rendererBounds = new Bounds();
+        Vector3 lastPosition = new Vector3(0, 10, 10);
+        Vector3 offset = Vector3.zero;
+        Animation animation;
 
         void CreateRenderer()
         {
@@ -54,13 +60,15 @@ namespace AnimationBaker.StateMachine.Editor
             var playButtonContent = EditorGUIUtility.IconContent("PlayButton");
             var pauseButtonContent = EditorGUIUtility.IconContent("PauseButton");
             var previewButtonSettingsStyle = new GUIStyle("preButton");
-            var buttonContent = isPlaying ? pauseButtonContent : playButtonContent;
-            isPlaying = GUILayout.Toggle(isPlaying, buttonContent, previewButtonSettingsStyle);
+            var buttonContent = graph.isPlaying ? pauseButtonContent : playButtonContent;
+            graph.isPlaying = GUILayout.Toggle(graph.isPlaying, buttonContent, previewButtonSettingsStyle);
         }
 
         public override void OnInteractivePreviewGUI(Rect rect, GUIStyle background)
         {
             if (!graph || !graph.Prefab) return;
+            if (graph.isPlaying)
+                deltaTime = (float) EditorApplication.timeSinceStartup;
             if (previewObject == null || lastPreviewHash != graph.Prefab.GetHashCode())
             {
                 Cleanup();
@@ -68,37 +76,70 @@ namespace AnimationBaker.StateMachine.Editor
                 lastPreviewHash = graph.Prefab.GetHashCode();
                 previewObject = previewRenderUtility.InstantiatePrefabInScene(graph.Prefab);
                 goHeight = GetHeight(previewObject.transform);
+                animation = graph.Prefab.GetComponent<Animation>();
             }
 
             DrawRuntimeFields();
 
+            if (graph.isPlaying)
+            {
+                try
+                {
+                    foreach (AnimationState aState in graph.PrefabAnimation)
+                    {
+                        aState.enabled = false;
+                    }
+                }
+                catch (System.Exception exception)
+                {
+                    Debug.Log(exception.Message);
+                }
+                var state = graph.Evaluate(deltaTime);
+                if (state != null)
+                {
+                    state.wrapMode = state.clip.wrapMode;
+                    state.enabled = true;
+                    state.time = graph.internalCounter;
+                    state.weight = 1;
+                    animation.Sample();
+                    RepaintGraph();
+                }
+            }
+
             previewRenderUtility.BeginPreview(rect, background);
 
-            previewCamera.transform.position = previewObject.transform.position + previewObject.transform.forward * CalcCameraDist(goHeight) + previewObject.transform.up * CalcCameraDist(goHeight) - previewObject.transform.right * CalcCameraDist(goHeight);
+            if (lastPosition == Vector3.zero)
+            {
+                lastPosition.x = previewCamera.transform.position.x;
+                lastPosition.z = previewCamera.transform.position.z;
+            }
 
-            previewCamera.transform.LookAt(previewObject.transform);
+            foreach (var light in previewRenderUtility.lights)
+            {
+                light.transform.rotation = previewCamera.transform.rotation;
+            }
 
             previewRenderUtility.Render();
-
-            previewObject.SetActive(true);
 
             previewCamera.Render();
 
             previewRenderUtility.EndAndDrawPreview(rect);
 
+            if (rect.size.x > 1 && rect.size.y > 1)
+                previewRect = rect;
+
             // http://anchan828.github.io/editor-manual/web/customeditor.html
             // http://anchan828.github.io/editor-manual/web/spriteanimationpreview2.html
+            UpdatePosition();
         }
 
         private float GetHeight(Transform source)
         {
-            var bounds = new Bounds();
-            bounds.center = source.position;
-            bounds = AddRenderers(bounds, source);
-            return bounds.size.y / 3f;
+            rendererBounds = GetRendererBounds(rendererBounds, source);
+            return rendererBounds.size.y / 2f;
         }
 
-        private Bounds AddRenderers(Bounds bounds, Transform source)
+        private Bounds GetRendererBounds(Bounds bounds, Transform source)
         {
             var filter = source.GetComponent<MeshFilter>();
             if (filter != null && filter.sharedMesh != null)
@@ -119,43 +160,133 @@ namespace AnimationBaker.StateMachine.Editor
             }
             foreach (Transform child in source)
             {
-                bounds = AddRenderers(bounds, child);
+                bounds = GetRendererBounds(bounds, child);
             }
             return bounds;
         }
 
         private float CalcCameraDist(float height)
         {
-            return height / Mathf.Tan(previewCamera.fieldOfView * 0.5f * Mathf.Deg2Rad);
+            return height / Mathf.Tan(previewCamera.fieldOfView * 0.5f * Mathf.Deg2Rad) * cameraZoom;
         }
 
         private void DrawRuntimeFields()
         {
+            var oldWidth = EditorGUIUtility.labelWidth;
+            EditorGUIUtility.labelWidth = 100;
             EditorGUILayout.BeginVertical();
             foreach (var variable in graph.variables)
             {
+                if (String.IsNullOrEmpty(variable.name)) continue;
                 switch (variable.VariableType)
                 {
                     case VariableType.Boolean:
-                        variable.RuntimeBoolVal = EditorGUILayout.Toggle(variable.Name, variable.RuntimeBoolVal);
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label(variable.name, GUILayout.Width(100));
+                        variable.RuntimeBoolVal = EditorGUILayout.Toggle(variable.RuntimeBoolVal);
+                        GUILayout.EndHorizontal();
                         break;
                     case VariableType.Float:
-                        variable.RuntimeFloatVal = EditorGUILayout.FloatField(variable.Name, variable.RuntimeFloatVal);
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label(variable.name, GUILayout.Width(100));
+                        variable.RuntimeFloatVal = EditorGUILayout.FloatField(variable.RuntimeFloatVal);
+                        if (GUILayout.Button("+", GUILayout.Width(20)))
+                        {
+                            variable.RuntimeFloatVal += 1;
+                        }
+                        if (GUILayout.Button("-", GUILayout.Width(20)))
+                        {
+                            variable.RuntimeFloatVal -= 1;
+                        }
+                        GUILayout.EndHorizontal();
                         break;
                     case VariableType.Integer:
-                        variable.RuntimeIntVal = EditorGUILayout.IntField(variable.Name, variable.RuntimeIntVal);
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label(variable.name, GUILayout.Width(100));
+                        variable.RuntimeIntVal = EditorGUILayout.IntField(variable.RuntimeIntVal);
+                        if (GUILayout.Button("+", GUILayout.Width(20)))
+                        {
+                            variable.RuntimeIntVal += 1;
+                        }
+                        if (GUILayout.Button("-", GUILayout.Width(20)))
+                        {
+                            variable.RuntimeIntVal -= 1;
+                        }
+                        GUILayout.EndHorizontal();
                         break;
                     case VariableType.Trigger:
-                        if (GUILayout.Button("Trigger: " + variable.Name))
+                        if (GUILayout.Button("Trigger: " + variable.name))
                         {
                             SetTrigger(variable);
                         }
                         break;
                 }
             }
+
             EditorGUILayout.BeginVertical();
+            EditorGUIUtility.labelWidth = oldWidth;
         }
 
-        private void SetTrigger(NodeGraphVariable variable) { }
+        private void SetTrigger(NodeGraphVariable variable)
+        {
+            variable.RuntimeTriggerVal = true;
+        }
+
+        private void PreviewEventListeners()
+        {
+            var evt = Event.current;
+            switch (evt.type)
+            {
+                case EventType.ScrollWheel:
+                    cameraZoom += evt.delta.y * 0.1f;
+                    evt.Use();
+                    UpdatePosition();
+                    break;
+                case EventType.MouseDown:
+                    if (evt.button == 0)
+                        lastPosition = evt.mousePosition;
+                    break;
+                case EventType.MouseDrag:
+                    if (evt.button == 0)
+                    {
+                        lastPosition.y = ClampAngle(lastPosition.y + evt.delta.y, -20, 80);
+                        lastPosition.x = lastPosition.x + evt.delta.x;
+                        UpdatePosition();
+                    }
+                    else if (evt.button == 1)
+                    {
+                        var off = new Vector3();
+                        off.x = -evt.delta.x;
+                        off.y = evt.delta.y;
+                        off *= 0.01f * cameraZoom;
+                        offset += previewCamera.transform.rotation * off;
+                    }
+                    break;
+            }
+
+        }
+
+        private void UpdatePosition()
+        {
+
+            var rotation = Quaternion.Euler(lastPosition.y, lastPosition.x, 0);
+
+            var distance = CalcCameraDist(goHeight);
+            var position = offset + rotation * new Vector3(0, 0, -distance) + Vector3.zero;
+
+            previewCamera.transform.rotation = rotation;
+            previewCamera.transform.position = position;
+
+            Repaint();
+        }
+
+        public static float ClampAngle(float angle, float min, float max)
+        {
+            if (angle < -360F)
+                angle += 360F;
+            if (angle > 360F)
+                angle -= 360F;
+            return Mathf.Clamp(angle, min, max);
+        }
     }
 }

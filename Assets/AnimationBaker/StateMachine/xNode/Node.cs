@@ -72,6 +72,7 @@ namespace AnimationBaker.StateMachine.XNode
         public IEnumerable<NodePort> InstanceOutputs { get { foreach (NodePort port in Ports) { if (port.IsDynamic && port.IsOutput) yield return port; } } }
         /// <summary> Iterate over all instance inputs on this node. </summary>
         public IEnumerable<NodePort> InstanceInputs { get { foreach (NodePort port in Ports) { if (port.IsDynamic && port.IsInput) yield return port; } } }
+
         /// <summary> Parent <see cref="NodeGraph"/> </summary>
         [SerializeField] public NodeGraph graph;
         /// <summary> Position on the <see cref="NodeGraph"/> </summary>
@@ -376,10 +377,12 @@ namespace AnimationBaker.StateMachine.XNode
                         if (rule.Variable == variable)
                         {
                             connection.rules.Remove(rule);
+                            DestroyImmediate(rule, true);
                         }
                     }
                 }
             }
+            graph.IsDirty = true;
         }
     }
 }

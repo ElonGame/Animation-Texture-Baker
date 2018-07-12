@@ -54,7 +54,7 @@ namespace AnimationBaker.StateMachine.XNodeEditor
         /// <summary> Draws standard field editors for all public fields </summary>
         public virtual void OnBodyGUI()
         {
-            string[] excludes = { "m_Script", "graph", "position", "ports", "Duration", "RulesToggles", "Input", "Output" };
+            string[] excludes = { "m_Script", "graph", "position", "ports", "Duration", "RulesToggles", "Input", "Output", "WrapMode", "FrameRate" };
             portPositions = new Dictionary<AnimationBaker.StateMachine.XNode.NodePort, Vector2>();
 
             SerializedProperty iterator = serializedObject.GetIterator();

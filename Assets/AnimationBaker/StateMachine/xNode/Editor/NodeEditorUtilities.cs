@@ -114,7 +114,7 @@ namespace AnimationBaker.StateMachine.XNodeEditor
         }
 
         /// <summary>Creates a new C# Class.</summary>
-        [MenuItem("Assets/Create/xNode/Node C# Script", false, 89)]
+        // [MenuItem("Assets/Create/xNode/Node C# Script", false, 89)]
         private static void CreateNode()
         {
             string[] guids = AssetDatabase.FindAssets("xNode_NodeTemplate.cs");
@@ -131,7 +131,7 @@ namespace AnimationBaker.StateMachine.XNodeEditor
         }
 
         /// <summary>Creates a new C# Class.</summary>
-        [MenuItem("Assets/Create/xNode/NodeGraph C# Script", false, 89)]
+        // [MenuItem("Assets/Create/xNode/NodeGraph C# Script", false, 89)]
         private static void CreateGraph()
         {
             string[] guids = AssetDatabase.FindAssets("xNode_NodeGraphTemplate.cs");

@@ -274,9 +274,12 @@ namespace AnimationBaker.StateMachine.XNodeEditor
                         AnimationBaker.StateMachine.XNode.NodePort input = output.GetConnectionPort(k);
 
                         var connection = output.Connections[k];
-                        if (connection.rules.Count > 0)
+                        if (graph.isPlaying)
                         {
-                            // connectionColor = Color.red;
+                            if (!connection.Cleared)
+                                connectionColor = Color.grey;
+                            else
+                                connectionColor = Color.green;
                         }
 
                         // var connection = output.GetConnection(input);

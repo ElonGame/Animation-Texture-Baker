@@ -12,7 +12,9 @@ namespace AnimationBaker.StateMachine.XNode
     public abstract class NodeGraph : ScriptableObject
     {
 
+        public List<NodeGraphVariable> variables = new List<NodeGraphVariable>();
         private bool isDirty = false;
+        public bool isPlaying { get; set; }
         public bool IsDirty
         {
             set
@@ -27,7 +29,6 @@ namespace AnimationBaker.StateMachine.XNode
         /// <summary> All nodes in the graph. <para/>
         /// See: <see cref="AddNode{T}"/> </summary>
         [SerializeField] public List<Node> nodes = new List<Node>();
-        [SerializeField] public List<NodeGraphVariable> variables = new List<NodeGraphVariable>();
         [SerializeField] public bool booted = false;
         [SerializeField] public Vector2 dragPosition;
 
@@ -118,25 +119,25 @@ namespace AnimationBaker.StateMachine.XNode
             Clear();
         }
 
-        public virtual NodeGraphVariable AddVariable()
+        public virtual void Boot()
         {
-            var variable = new NodeGraphVariable();
+            booted = true;
+        }
+
+        public NodeGraphVariable AddVariable()
+        {
+            var variable = ScriptableObject.CreateInstance<NodeGraphVariable>();
             variables.Add(variable);
             return variable;
         }
 
-        public virtual void RemoveVariable(NodeGraphVariable variable)
+        public void RemoveVariable(NodeGraphVariable variable)
         {
             variables.Remove(variable);
             foreach (var node in nodes)
             {
                 node.VariableRemoved(variable);
             }
-        }
-
-        public virtual void Boot()
-        {
-            booted = true;
         }
     }
 }

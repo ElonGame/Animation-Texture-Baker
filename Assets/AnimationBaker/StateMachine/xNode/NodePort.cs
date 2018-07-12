@@ -115,8 +115,8 @@ namespace AnimationBaker.StateMachine.XNode
             for (int i = connections.Count - 1; i >= 0; i--)
             {
                 if (connections[i].toNode != null &&
-                    !string.IsNullOrEmpty(connections[i].fieldName) &&
-                    connections[i].toNode.GetPort(connections[i].fieldName) != null)
+                    !string.IsNullOrEmpty(connections[i].name) &&
+                    connections[i].toNode.GetPort(connections[i].name) != null)
                     continue;
                 connections.RemoveAt(i);
             }
@@ -235,10 +235,17 @@ namespace AnimationBaker.StateMachine.XNode
             if (direction == port.direction) { Debug.LogWarning("Cannot connect two " + (direction == IO.Input ? "input" : "output") + " connections"); return; }
             if (port.connectionType == Node.ConnectionType.Override && port.ConnectionCount != 0) { port.ClearConnections(); }
             if (connectionType == Node.ConnectionType.Override && ConnectionCount != 0) { ClearConnections(); }
-            var connection = new NodeConnection(this, port);
+            var connection = new NodeConnection();
+            connection.Setup(this, port);
             connections.Add(connection);
             if (port.connections == null) port.connections = new List<NodeConnection>();
-            if (!port.IsConnectedToPort(this)) port.connections.Add(new NodeConnection(this, this));
+            if (!port.IsConnectedToPort(this))
+            {
+                connection = new NodeConnection();
+                connection.Setup(port, this);
+                port.connections.Add(connection);
+            }
+
             node.OnCreateConnection(this, port, connection);
             port.node.OnCreateConnection(this, port, connection);
         }
@@ -246,12 +253,12 @@ namespace AnimationBaker.StateMachine.XNode
         public NodePort GetConnectionPort(int i)
         {
             //If the connection is broken for some reason, remove it.
-            if (connections[i].toNode == null || string.IsNullOrEmpty(connections[i].fieldName))
+            if (connections[i].toNode == null || string.IsNullOrEmpty(connections[i].name))
             {
                 connections.RemoveAt(i);
                 return null;
             }
-            NodePort port = connections[i].toNode.GetPort(connections[i].fieldName);
+            NodePort port = connections[i].toNode.GetPort(connections[i].name);
             if (port == null)
             {
                 connections.RemoveAt(i);

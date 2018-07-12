@@ -20,18 +20,15 @@ namespace AnimationBaker.StateMachine.Editor
             node = (BaseNode) target;
             graph = (StateGraph) node.graph;
             if (node == null || graph == null) return;
+            if (!AssetDatabase.IsMainAsset(graph)) return;
             EditorGUI.BeginChangeCheck();
             DrawTitle(graph);
             if (!node.HasState) return;
             DrawTransitions();
             if (EditorGUI.EndChangeCheck())
             {
-                // EditorUtility.SetDirty(graph);
-                // EditorUtility.SetDirty(node);
                 graph.IsDirty = true;
                 node.IsDirty = true;
-                // AssetDatabase.SaveAssets();
-                // RepaintGraph();
             }
         }
 
@@ -97,8 +94,8 @@ namespace AnimationBaker.StateMachine.Editor
         {
             Rect rect = EditorGUILayout.BeginHorizontal();
 
-            var variableNames = graph.variables.Select(x => x.Name).ToArray();
-            var currentVariableIndex = Array.IndexOf(variableNames, rule.Variable.Name);
+            var variableNames = graph.variables.Select(x => x.name).ToArray();
+            var currentVariableIndex = Array.IndexOf(variableNames, rule.Variable.name);
             var variableIndex = EditorGUILayout.Popup(currentVariableIndex, variableNames);
             if (variableIndex != currentVariableIndex)
             {
@@ -108,17 +105,17 @@ namespace AnimationBaker.StateMachine.Editor
             if (rule.Variable.VariableType != VariableType.Trigger)
             {
 
-                rule.Qualifier = (Qualifier) EditorGUILayout.EnumPopup(rule.Qualifier);
-
                 switch (rule.Variable.VariableType)
                 {
                     case VariableType.Boolean:
                         rule.QualifierBoolEnum = (TrueFalse) EditorGUILayout.EnumPopup(rule.QualifierBoolEnum);
                         break;
                     case VariableType.Float:
+                        rule.Qualifier = (Qualifier) EditorGUILayout.EnumPopup(rule.Qualifier);
                         rule.QualifierFloatVal = EditorGUILayout.FloatField(rule.QualifierFloatVal);
                         break;
                     case VariableType.Integer:
+                        rule.Qualifier = (Qualifier) EditorGUILayout.EnumPopup(rule.Qualifier);
                         rule.QualifierIntVal = EditorGUILayout.IntField(rule.QualifierIntVal);
                         break;
                 }
@@ -143,7 +140,10 @@ namespace AnimationBaker.StateMachine.Editor
             addButtonRect.height = 14;
             if (connection.CanAddRule() && GUI.Button(addButtonRect, "+"))
             {
-                connection.AddRule();
+                var rule = connection.AddRule();
+                rule.name = connection.fromNode.name + connection.toNode.name + "Rule_" + connection.rules.Count;
+                AssetDatabase.AddObjectToAsset(rule, graph);
+                graph.IsDirty = true;
             }
         }
 
