@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -116,6 +116,51 @@ namespace AnimationBaker.StateMachine
 		{
 			LoadAnimationStates();
 			FindKeyNodes();
+			SyncVariables();
+		}
+
+		private void SyncVariables()
+		{
+			foreach (BaseNode node in nodes)
+			{
+				foreach (var port in node.Ports)
+				{
+					foreach (var connection in port.Connections)
+					{
+						foreach (var rule in connection.rules)
+						{
+							if (rule.Variable != null) continue;
+							foreach (var variable in variables)
+							{
+								if (variable.name == rule.VariableName)
+								{
+									rule.Variable = variable;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		public NodeGraphVariable GetVariable(string name)
+		{
+			if (string.IsNullOrEmpty(name))
+			{
+				if (variables.Count > 0)
+				{
+					return variables[0];
+				}
+				return null;
+			}
+			foreach (var variable in variables)
+			{
+				if (variable.name == name)
+				{
+					return variable;
+				}
+			}
+			return null;
 		}
 
 		private void FindKeyNodes()

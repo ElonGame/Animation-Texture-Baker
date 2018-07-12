@@ -100,6 +100,7 @@ namespace AnimationBaker.StateMachine.Editor
             if (variableIndex != currentVariableIndex)
             {
                 rule.Variable = graph.variables[variableIndex];
+                rule.VariableName = rule.Variable.name;
             }
 
             if (rule.Variable.VariableType != VariableType.Trigger)
