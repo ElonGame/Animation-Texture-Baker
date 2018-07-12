@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -83,17 +83,24 @@ namespace AnimationBaker.StateMachine
 			PrefabAnimation = Prefab.GetComponent<Animation>();
 			if (PrefabAnimation)
 			{
-				foreach (AnimationState state in PrefabAnimation)
+				try
 				{
-					foreach (BaseNode node in nodes)
+					foreach (AnimationState state in PrefabAnimation)
 					{
-						if (node.name == state.clip.name)
+						foreach (BaseNode node in nodes)
 						{
-							node.AnimationState = state;
+							if (node.name == state.clip.name)
+							{
+								node.AnimationState = state;
+							}
 						}
 					}
+					animationLoaded = true;
 				}
-				animationLoaded = true;
+				catch
+				{
+					Debug.LogWarning("Failed to read animation data.");
+				}
 			}
 		}
 
