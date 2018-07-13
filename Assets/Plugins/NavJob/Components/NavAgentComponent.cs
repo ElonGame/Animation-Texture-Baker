@@ -1,6 +1,6 @@
+using UnityEngine;
 using Unity.Entities;
 using Unity.Mathematics;
-using UnityEngine;
 
 namespace NavJob.Components
 {
@@ -33,7 +33,7 @@ namespace NavJob.Components
         public int nextWaypointIndex { get; set; }
         public int totalWaypoints { get; set; }
 
-        public NavAgent (
+        public NavAgent(
             float3 position,
             Quaternion rotation,
             float stoppingDistance = 1f,
@@ -54,7 +54,7 @@ namespace NavJob.Components
             status = AgentStatus.Idle;
             this.position = position;
             this.rotation = rotation;
-            nextPosition = new float3 (Mathf.Infinity, Mathf.Infinity, Mathf.Infinity);
+            nextPosition = new float3(Mathf.Infinity, Mathf.Infinity, Mathf.Infinity);
             remainingDistance = 0;
             currentWaypoint = Vector3.zero;
             nextWaypointIndex = 0;

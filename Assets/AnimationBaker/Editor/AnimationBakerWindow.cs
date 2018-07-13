@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEngine;
 using Unity.Collections;
 using UnityEditor;
+using AnimationBaker.Utils;
 
 namespace AnimationBaker
 {
@@ -12,10 +13,6 @@ namespace AnimationBaker
     {
         public ComputeShader infoTexGen;
         public Shader playShader;
-        // public RenderTexture randomWrite;
-
-        // const float animationFps = 60;
-
         GameObject chosen;
         Transform chosenTransform;
         GameObject lastChosen;
@@ -214,11 +211,11 @@ namespace AnimationBaker
         {
             if (!infoTexGen)
             {
-                infoTexGen = (ComputeShader) Resources.Load("MeshInfoTextureGen", typeof(ComputeShader));
+                infoTexGen = (ComputeShader) Resources.Load("AnimationBaker/Shaders/MeshInfoTextureGen", typeof(ComputeShader));
             }
             if (!playShader)
             {
-                playShader = (Shader) Resources.Load("LitBakedAnimPlayer", typeof(Shader));
+                playShader = (Shader) Resources.Load("AnimationBaker/Shaders/LitBakedAnimPlayer", typeof(Shader));
             }
             var instance = Instantiate(chosen, Vector3.zero, Quaternion.identity);
             var instanceTransform = instance.transform;

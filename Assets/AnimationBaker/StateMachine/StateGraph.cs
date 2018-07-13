@@ -20,12 +20,11 @@ namespace AnimationBaker.StateMachine
 		public int Vertices = 0;
 		public int PrefabHashCode = 0;
 		public Animation PrefabAnimation { get; set; }
-
-		List<Mesh> meshes = new List<Mesh>();
+		public List<Mesh> meshes { get; set; }
 		public StartNode startNode;
 		public EndNode endNode;
 		public AnyNode anyNode;
-		bool animationLoaded = false;
+		public bool animationLoaded { get; set; }
 
 		public bool HasAnimation
 		{
@@ -35,14 +34,14 @@ namespace AnimationBaker.StateMachine
 			}
 		}
 
-		public BaseNode AddNewAnimation(System.Type Type, AnimationState state = null, string name = "")
+		public BaseNode AddNewAnimation(System.Type Type, AnimationClip clip = null, string name = "")
 		{
 			var node = AddNode(Type);
 			if (name == "")
 			{
-				if (state != null)
+				if (clip != null)
 				{
-					name = state.name;
+					name = clip.name;
 				}
 				else
 				{
@@ -53,12 +52,12 @@ namespace AnimationBaker.StateMachine
 			if (Type == typeof(StateNode))
 			{
 				var baseNode = (BaseNode) node;
-				if (state != null)
+				if (clip != null)
 				{
-					baseNode.AnimationState = state;
-					baseNode.Duration = state.clip.length;
-					baseNode.WrapMode = state.wrapMode;
-					baseNode.FrameRate = state.clip.frameRate;
+					baseNode.Clip = clip;
+					baseNode.Duration = clip.length;
+					baseNode.WrapMode = clip.wrapMode;
+					baseNode.FrameRate = clip.frameRate;
 				}
 				baseNode.AddInstanceInput(typeof(BaseNode.Empty), Node.ConnectionType.Multiple, "Input");
 				baseNode.AddInstanceOutput(typeof(BaseNode.Empty), Node.ConnectionType.Multiple, "Output");
@@ -71,7 +70,15 @@ namespace AnimationBaker.StateMachine
 			Prefab = prefab;
 			PrefabHashCode = prefab.GetHashCode();
 			PrefabAnimation = prefab.GetComponent<Animation>();
-			foreach (var mesh in GetMeshes(meshes, prefab.transform))
+			RecalculateMesh();
+		}
+
+		private void RecalculateMesh()
+		{
+			if (!Prefab) return;
+			Vertices = 0;
+			meshes = new List<Mesh>();
+			foreach (var mesh in GetMeshes(meshes, Prefab.transform))
 			{
 				Vertices += mesh.vertexCount;
 			}
@@ -81,27 +88,19 @@ namespace AnimationBaker.StateMachine
 		{
 			if (!Prefab) return;
 			PrefabAnimation = Prefab.GetComponent<Animation>();
-			if (PrefabAnimation)
+#if UNITY_EDITOR
+			foreach (AnimationClip clip in AnimationUtility.GetAnimationClips(Prefab))
 			{
-				try
+				foreach (BaseNode node in nodes)
 				{
-					foreach (AnimationState state in PrefabAnimation)
+					if (node.name == clip.name)
 					{
-						foreach (BaseNode node in nodes)
-						{
-							if (node.name == state.clip.name)
-							{
-								node.AnimationState = state;
-							}
-						}
+						node.Clip = clip;
 					}
-					animationLoaded = true;
-				}
-				catch
-				{
-					Debug.LogWarning("Failed to read animation data.");
 				}
 			}
+#endif
+			animationLoaded = true;
 		}
 
 		private void OnValidate()
@@ -117,6 +116,7 @@ namespace AnimationBaker.StateMachine
 			LoadAnimationStates();
 			FindKeyNodes();
 			SyncVariables();
+			RecalculateMesh();
 		}
 
 		private void SyncVariables()
@@ -286,60 +286,60 @@ namespace AnimationBaker.StateMachine
 				_lastRuntime = runtime;
 			}
 		}
-		AnimationState lastState = null;
-		bool isAnyState = false;
+		AnimationClip lastClip = null;
+		bool isAnyClip = false;
 
-		public AnimationState Evaluate(float dt)
+		public AnimationClip Evaluate(float dt)
 		{
 			if (anyNode == null) return null;
 			if (startNode == null) return null;
 			runtime = dt;
-			AnimationState qualifiedState = anyNode.Evaluate(null);
+			AnimationClip qualifiedState = anyNode.Evaluate(null);
 			if (qualifiedState != null)
 			{
-				isAnyState = true;
-				if (lastState != qualifiedState)
+				isAnyClip = true;
+				if (lastClip != qualifiedState)
 				{
 					internalCounter = 0;
 				}
-				lastState = qualifiedState;
+				lastClip = qualifiedState;
 				UpdateConnections(qualifiedState);
 				return qualifiedState;
 			}
-			else if (isAnyState)
+			else if (isAnyClip)
 			{
 				if (
-					internalCounter < lastState.length
+					internalCounter < lastClip.length
 				)
 				{
-					UpdateConnections(lastState);
-					return lastState;
+					UpdateConnections(lastClip);
+					return lastClip;
 				}
 				else
 				{
-					isAnyState = false;
+					isAnyClip = false;
 				}
 			}
 			qualifiedState = startNode.Evaluate(null);
 			if (qualifiedState != null)
 			{
-				if (lastState != qualifiedState)
+				if (lastClip != qualifiedState)
 				{
 					internalCounter = 0;
 				}
-				lastState = qualifiedState;
+				lastClip = qualifiedState;
 				UpdateConnections(qualifiedState);
 				return qualifiedState;
 			}
 			return null;
 		}
 
-		private void UpdateConnections(AnimationState state)
+		private void UpdateConnections(AnimationClip clip)
 		{
 			BaseNode activeNode = null;
 			foreach (BaseNode node in nodes)
 			{
-				if (node.AnimationState == state)
+				if (node.Clip == clip)
 				{
 					activeNode = node;
 				}

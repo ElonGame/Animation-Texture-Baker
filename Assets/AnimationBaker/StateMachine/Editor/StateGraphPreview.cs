@@ -6,7 +6,6 @@ using UnityEditor;
 using AnimationBaker.StateMachine.Nodes;
 using AnimationBaker.StateMachine.XNode;
 using AnimationBaker.StateMachine.XNodeEditor;
-using UEditor = UnityEditor.Editor;
 
 namespace AnimationBaker.StateMachine.Editor
 {
@@ -21,9 +20,13 @@ namespace AnimationBaker.StateMachine.Editor
         float deltaTime = 0;
         float cameraZoom = 2;
         Bounds rendererBounds = new Bounds();
-        Vector3 lastPosition = new Vector3(0, 10, 10);
+        Vector3 lastPosition = new Vector3(145, 35, 10);
         Vector3 offset = Vector3.zero;
-        Animation animation;
+
+        public override bool HasPreviewGUI()
+        {
+            return AssetDatabase.IsMainAsset(graph) && graph.animationLoaded;
+        }
 
         void CreateRenderer()
         {
@@ -76,43 +79,20 @@ namespace AnimationBaker.StateMachine.Editor
                 lastPreviewHash = graph.Prefab.GetHashCode();
                 previewObject = previewRenderUtility.InstantiatePrefabInScene(graph.Prefab);
                 goHeight = GetHeight(previewObject.transform);
-                animation = graph.Prefab.GetComponent<Animation>();
             }
-
             DrawRuntimeFields();
 
             if (graph.isPlaying)
             {
-                try
+                var clip = graph.Evaluate(deltaTime);
+                if (clip != null)
                 {
-                    foreach (AnimationState aState in graph.PrefabAnimation)
-                    {
-                        aState.enabled = false;
-                    }
-                }
-                catch (System.Exception exception)
-                {
-                    Debug.Log(exception.Message);
-                }
-                var state = graph.Evaluate(deltaTime);
-                if (state != null)
-                {
-                    state.wrapMode = state.clip.wrapMode;
-                    state.enabled = true;
-                    state.time = graph.internalCounter;
-                    state.weight = 1;
-                    animation.Sample();
+                    clip.SampleAnimation(graph.Prefab, graph.internalCounter);
                     RepaintGraph();
                 }
             }
 
             previewRenderUtility.BeginPreview(rect, background);
-
-            if (lastPosition == Vector3.zero)
-            {
-                lastPosition.x = previewCamera.transform.position.x;
-                lastPosition.z = previewCamera.transform.position.z;
-            }
 
             foreach (var light in previewRenderUtility.lights)
             {
@@ -125,12 +105,13 @@ namespace AnimationBaker.StateMachine.Editor
 
             previewRenderUtility.EndAndDrawPreview(rect);
 
-            if (rect.size.x > 1 && rect.size.y > 1)
+            if (Event.current.type == EventType.Repaint)
                 previewRect = rect;
 
             // http://anchan828.github.io/editor-manual/web/customeditor.html
             // http://anchan828.github.io/editor-manual/web/spriteanimationpreview2.html
             UpdatePosition();
+            PreviewEventListeners();
         }
 
         private float GetHeight(Transform source)
@@ -174,7 +155,7 @@ namespace AnimationBaker.StateMachine.Editor
         {
             var oldWidth = EditorGUIUtility.labelWidth;
             EditorGUIUtility.labelWidth = 100;
-            EditorGUILayout.BeginVertical();
+            var rect = EditorGUILayout.BeginVertical();
             foreach (var variable in graph.variables)
             {
                 if (String.IsNullOrEmpty(variable.name)) continue;
@@ -222,8 +203,7 @@ namespace AnimationBaker.StateMachine.Editor
                         break;
                 }
             }
-
-            EditorGUILayout.BeginVertical();
+            EditorGUILayout.EndVertical();
             EditorGUIUtility.labelWidth = oldWidth;
         }
 
@@ -235,16 +215,16 @@ namespace AnimationBaker.StateMachine.Editor
         private void PreviewEventListeners()
         {
             var evt = Event.current;
+            var mousePosition = evt.mousePosition;
+            if (mousePosition.y < previewRect.yMin || mousePosition.y > previewRect.yMax || mousePosition.x < previewRect.xMin || mousePosition.x > previewRect.xMax)
+                return;
+            // Debug.Log(evt.mousePosition.y);
             switch (evt.type)
             {
                 case EventType.ScrollWheel:
                     cameraZoom += evt.delta.y * 0.1f;
                     evt.Use();
                     UpdatePosition();
-                    break;
-                case EventType.MouseDown:
-                    if (evt.button == 0)
-                        lastPosition = evt.mousePosition;
                     break;
                 case EventType.MouseDrag:
                     if (evt.button == 0)
@@ -268,15 +248,11 @@ namespace AnimationBaker.StateMachine.Editor
 
         private void UpdatePosition()
         {
-
             var rotation = Quaternion.Euler(lastPosition.y, lastPosition.x, 0);
-
             var distance = CalcCameraDist(goHeight);
             var position = offset + rotation * new Vector3(0, 0, -distance) + Vector3.zero;
-
             previewCamera.transform.rotation = rotation;
             previewCamera.transform.position = position;
-
             Repaint();
         }
 

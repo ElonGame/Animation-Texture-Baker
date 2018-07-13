@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using AnimationBaker.StateMachine.XNode;
+using AnimationBaker.Utils;
 
 namespace AnimationBaker.StateMachine.Nodes
 {
@@ -27,17 +28,25 @@ namespace AnimationBaker.StateMachine.Nodes
         public WrapMode WrapMode;
         public float Duration = 0;
         public RulesToggleDictionary RulesToggles = new RulesToggleDictionary();
-        public AnimationState AnimationState { get; set; }
-        public bool HasCurrentState { get => AnimationState != null; set { } }
+        public AnimationClip Clip { get; set; }
+        public bool HasClip { get => Clip != null; set { } }
         public override object GetValue(NodePort port)
         {
             return null;
+        }
+        public int Frames
+        {
+            get
+            {
+                var delta = FrameRate * 0.001f;
+                return Mathf.CeilToInt(Duration / delta);
+            }
         }
 
         [Serializable]
         public class Empty { }
 
-        public virtual AnimationState Evaluate(AnimationState lastState)
+        public virtual AnimationClip Evaluate(AnimationClip lastState)
         {
             foreach (var port in Outputs)
             {
@@ -54,9 +63,9 @@ namespace AnimationBaker.StateMachine.Nodes
                     if (result)
                     {
                         var baseNode = (BaseNode) connection.toNode;
-                        if (baseNode.AnimationState != null)
+                        if (baseNode.Clip != null)
                         {
-                            lastState = baseNode.AnimationState;
+                            lastState = baseNode.Clip;
                         }
                         return baseNode.Evaluate(lastState);
                     }

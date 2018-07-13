@@ -40,9 +40,12 @@ namespace AnimationBaker.StateMachine.Editor
             GUILayout.Space(8);
             DrawAnimations();
             DrawVariables();
-            if (HasPreviewGUI())
+            if (!graph.animationLoaded)
             {
-                PreviewEventListeners();
+                if (GUILayout.Button("Reload Animations"))
+                {
+                    graph.LoadAnimationStates();
+                }
             }
             if (EditorGUI.EndChangeCheck())
             {
@@ -51,6 +54,10 @@ namespace AnimationBaker.StateMachine.Editor
             if (graph.isPlaying)
             {
                 Repaint();
+            }
+            else
+            {
+                DrawBaking();
             }
         }
 
@@ -127,7 +134,7 @@ namespace AnimationBaker.StateMachine.Editor
                 labelRect.yMin += 16;
                 labelRect.height = 14;
                 GUILayout.Space(14);
-                GUI.Label(labelRect, "Duration: " + node.Duration.ToString("N2") + "s  Frame Rate: " + node.FrameRate, EditorStyles.miniLabel);
+                GUI.Label(labelRect, "Duration: " + node.Duration.ToString("N2") + "s  Frame Rate: " + node.FrameRate + " Frames: " + node.Frames, EditorStyles.miniLabel);
 
                 EditorGUILayout.EndVertical();
             }
@@ -136,10 +143,10 @@ namespace AnimationBaker.StateMachine.Editor
 
         private void ImportAnimationClips(GameObject prefab)
         {
-            foreach (AnimationState state in graph.PrefabAnimation)
+            foreach (AnimationClip clip in AnimationUtility.GetAnimationClips(prefab))
             {
-                if (!graph.HasNode(state.name))
-                    CreateNode(typeof(StateNode), state, state.name);
+                if (!graph.HasNode(clip.name))
+                    CreateNode(typeof(StateNode), clip, clip.name);
             }
         }
 
@@ -148,9 +155,9 @@ namespace AnimationBaker.StateMachine.Editor
             EditorWindow.GetWindow(typeof(NodeEditorWindow)).Repaint();
         }
 
-        private BaseNode CreateNode(Type type, AnimationState state = null, string name = "")
+        private BaseNode CreateNode(Type type, AnimationClip clip = null, string name = "")
         {
-            var node = graph.AddNewAnimation(type, state, name);
+            var node = graph.AddNewAnimation(type, clip, name);
             AssetDatabase.AddObjectToAsset(node, graph);
             return node;
         }
@@ -236,11 +243,6 @@ namespace AnimationBaker.StateMachine.Editor
         private bool ConfirmRemoveAnimations()
         {
             return EditorUtility.DisplayDialog("Remove Animations?", "Are you sure you want to remove this Animations?", "Yes", "No");
-        }
-
-        public override bool HasPreviewGUI()
-        {
-            return AssetDatabase.IsMainAsset(graph);
         }
     }
 }
