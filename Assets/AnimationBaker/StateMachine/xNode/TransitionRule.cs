@@ -79,13 +79,13 @@ namespace AnimationBaker.StateMachine.XNode
                     return Variable.RuntimeFloatVal == QualifierFloatVal;
                 case Qualifier.NotEqual:
                     return Variable.RuntimeFloatVal != QualifierFloatVal;
-                case Qualifier.LessThanAndEqual:
+                case Qualifier.LessThanOrEqual:
                     return Variable.RuntimeFloatVal <= QualifierFloatVal;
                 case Qualifier.LessThan:
                     return Variable.RuntimeFloatVal < QualifierFloatVal;
                 case Qualifier.MoreThan:
                     return Variable.RuntimeFloatVal > QualifierFloatVal;
-                case Qualifier.MoreThanAndEqual:
+                case Qualifier.MoreThanOrEqual:
                     return Variable.RuntimeFloatVal >= QualifierFloatVal;
             }
             return false;
@@ -99,13 +99,13 @@ namespace AnimationBaker.StateMachine.XNode
                     return Variable.RuntimeIntVal == QualifierIntVal;
                 case Qualifier.NotEqual:
                     return Variable.RuntimeIntVal != QualifierIntVal;
-                case Qualifier.LessThanAndEqual:
+                case Qualifier.LessThanOrEqual:
                     return Variable.RuntimeIntVal <= QualifierIntVal;
                 case Qualifier.LessThan:
                     return Variable.RuntimeIntVal < QualifierIntVal;
                 case Qualifier.MoreThan:
                     return Variable.RuntimeIntVal > QualifierIntVal;
-                case Qualifier.MoreThanAndEqual:
+                case Qualifier.MoreThanOrEqual:
                     return Variable.RuntimeIntVal >= QualifierIntVal;
             }
             return false;
@@ -120,11 +120,12 @@ namespace AnimationBaker.StateMachine.XNode
 
     public enum Qualifier
     {
-        Equal,
-        LessThanAndEqual,
-        LessThan,
-        MoreThanAndEqual,
-        MoreThan,
-        NotEqual
+        None = 0,
+        Equal = 1,
+        LessThanOrEqual = 2,
+        LessThan = 3,
+        MoreThanOrEqual = 4,
+        MoreThan = 5,
+        NotEqual = 6
     }
 }

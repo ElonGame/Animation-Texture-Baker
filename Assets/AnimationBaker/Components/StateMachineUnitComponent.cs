@@ -8,7 +8,6 @@ namespace AnimationBaker.Components
     [System.Serializable]
     public struct StateMachineUnit : IComponentData
     {
-        public int RendererHash;
         public Matrix4x4 Matrix;
         public float YPos;
     }

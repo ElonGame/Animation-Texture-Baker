@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEditor;
 using AnimationBaker.StateMachine.Nodes;
+using AnimationBaker.StateMachine.ScriptableObjects;
 using AnimationBaker.StateMachine.XNode;
 using AnimationBaker.StateMachine.XNodeEditor;
 using AnimationBaker.Utils;
@@ -15,7 +16,6 @@ namespace AnimationBaker.StateMachine.Editor
 {
     public partial class StateGraphEditor : UnityEditor.Editor
     {
-
         SkinnedMeshRenderer _meshRenderer;
         SkinnedMeshRenderer meshRenderer
         {
@@ -75,11 +75,19 @@ namespace AnimationBaker.StateMachine.Editor
         {
             get
             {
-                return PlayerPrefs.GetString(graph.Prefab.name + "AnimationOutputDir", Application.dataPath);
+                return PlayerPrefs.GetString(cleanName + "AnimationOutputDir", Application.dataPath);
             }
             set
             {
-                PlayerPrefs.SetString(graph.Prefab.name + "AnimationOutputDir", value);
+                PlayerPrefs.SetString(cleanName + "AnimationOutputDir", value);
+            }
+        }
+
+        string cleanName
+        {
+            get
+            {
+                return StringUtils.CreateFileName(graph.Prefab.name);
             }
         }
 
@@ -89,6 +97,13 @@ namespace AnimationBaker.StateMachine.Editor
         public void DrawBaking()
         {
             if (!graph.animationLoaded) return;
+            if (graph.rendererData == null)
+            {
+                graph.rendererData = ScriptableObject.CreateInstance<RendererData>();
+                graph.rendererData.name = "RendererData";
+                AssetDatabase.AddObjectToAsset(graph.rendererData, graph);
+                graph.IsDirty = true;
+            }
             GUILayout.Space(4);
             var horizontalRect = EditorGUILayout.BeginHorizontal();
             var changeButtonRect = horizontalRect;
@@ -159,19 +174,15 @@ namespace AnimationBaker.StateMachine.Editor
             }
             EditorGUILayout.HelpBox($"✔ Position and Normal Texture Size: {TextureWidth} x {TextureHeight} ({(TextureWidth * TextureHeight / 131072f).ToString("N0")}MB)", MessageType.None);
 
-            if (GUILayout.Button("Bake Prefab"))
+            if (GUILayout.Button("1. Generate ECS Component"))
+            {
+                CreateComponent();
+                AssetDatabase.Refresh();
+            }
+            if (GUILayout.Button("2. Bake Assets and Prefab"))
             {
                 Bake(GetClips());
             }
-            if (GUILayout.Button("Generate ECS Component"))
-            {
-                GenerateFiles(GetClips());
-            }
-        }
-
-        private void GenerateFiles(AnimationClip[] animationClip)
-        {
-
         }
 
         private void Bake(AnimationClip[] clips)
@@ -203,7 +214,7 @@ namespace AnimationBaker.StateMachine.Editor
 
             var dataPathLength = Application.dataPath.Length - 6;
 
-            var meshPath = outputPath + "/" + graph.Prefab.name + "Mesh.asset";
+            var meshPath = outputPath + "/" + cleanName + "Mesh.asset";
             if (File.Exists(meshPath))
             {
                 File.Delete(meshPath);
@@ -224,7 +235,7 @@ namespace AnimationBaker.StateMachine.Editor
             }
             normalTexturePath = normalTexturePath.Substring(dataPathLength);
 
-            var prefabPath = StringUtils.Combine(outputPath, graph.Prefab.name + ".prefab");
+            var prefabPath = StringUtils.Combine(outputPath, cleanName + ".prefab");
             if (File.Exists(prefabPath))
             {
                 File.Delete(prefabPath);
@@ -245,6 +256,8 @@ namespace AnimationBaker.StateMachine.Editor
             // Save mesh
 
             AssetDatabase.CreateAsset(newMesh, meshPath);
+            graph.rendererData.Mesh = newMesh;
+            graph.rendererData.SubMeshCount = newMesh.subMeshCount;
 
             var scale = Vector3.one;
             scale.x = 1 / rootBone.localScale.x;
@@ -418,10 +431,13 @@ namespace AnimationBaker.StateMachine.Editor
             AssetDatabase.Refresh();
 
             var materials = new Material[skinRenderer.sharedMaterials.Length];
+            graph.rendererData.Materials = new Material[skinRenderer.sharedMaterials.Length];
+            graph.rendererData.ShadowCastingMode = skinRenderer.shadowCastingMode;
+            graph.rendererData.ReceivesShadows = skinRenderer.receiveShadows;
             for (int i = 0; i < skinRenderer.sharedMaterials.Length; i++)
             {
                 var mat = new Material(playShader);
-                mat.name = string.Format("{0}.{1}.Material", graph.Prefab.name, i);
+                mat.name = string.Format("{0}.{1}.Material", cleanName, i);
                 mat.SetTexture("_MainTex", skinRenderer.sharedMaterials[i].mainTexture);
                 mat.SetColor("_Color", skinRenderer.sharedMaterials[i].color);
                 mat.SetTexture("_PosTex", positionTexture);
@@ -431,11 +447,13 @@ namespace AnimationBaker.StateMachine.Editor
                 materialPath = materialPath.Substring(dataPathLength);
                 AssetDatabase.CreateAsset(mat, materialPath);
                 materials[i] = mat;
+                graph.rendererData.Materials[i] = mat;
             }
-            var go = new GameObject(graph.Prefab.name);
+            var go = new GameObject(cleanName);
             go.AddComponent<MeshFilter>().sharedMesh = newMesh;
+            AssetDatabase.Refresh();
             var assembly = Assembly.GetAssembly(typeof(StateGraph));
-            var componentType = assembly.GetType("AnimationBaker.Baked.Baked" + graph.Prefab.name + "Component");
+            var componentType = assembly.GetType("AnimationBaker.Baked." + cleanName + "Component");
             go.AddComponent(componentType);
             var mr = go.AddComponent<MeshRenderer>();
             mr.sharedMaterials = materials;
@@ -444,6 +462,7 @@ namespace AnimationBaker.StateMachine.Editor
             PrefabUtility.CreatePrefab(prefabPath, go);
             DestroyImmediate(go);
             DestroyImmediate(instance);
+            EditorUtility.SetDirty(graph.rendererData);
         }
 
         private AnimationClip[] GetClips()
@@ -560,6 +579,97 @@ namespace AnimationBaker.StateMachine.Editor
             {
                 filters.Add(filter);
             }
+        }
+
+        private void CreateComponent()
+        {
+            var componentPath = StringUtils.Combine(outputPath, cleanName + "Component.cs");
+            string variables = "";
+            var indexGetterCases = "";
+            var indexSetterCases = "";
+            for (int i = 0; i < graph.variables.Count; i++)
+            {
+                var variable = graph.variables[i];
+                var variableName = StringUtils.CreateFileName(variable.name);
+                var type = "int";
+                var caster = "(int) ";
+                if (variable.VariableType == VariableType.Float)
+                {
+                    type = "float";
+                    caster = "";
+                }
+                variables += @"
+        public " + type + " " + variableName + "; // " + i;
+
+                indexGetterCases += @"
+                    case " + i + @":
+                        return " + variableName + @";";
+
+                indexSetterCases += @"
+                    case " + i + @":
+                        " + variableName + " = " + caster + @"value;
+                        break;";
+            }
+
+            string contents = @"using UnityEngine;
+using Unity.Entities;
+using Unity.Transforms;
+using AnimationBaker.Components;
+using AnimationBaker.Interfaces;
+
+namespace AnimationBaker.Baked
+{
+    [System.Serializable]
+    public struct " + cleanName + @" : IUnitState
+    {
+        public float Runtime
+        {
+            get;
+            set;
+        }
+        public float StateTimer
+        {
+            get;
+            set;
+        }
+        public int CurrentState
+        {
+            get;
+            set;
+        }
+        public int PreviousState
+        {
+            get;
+            set;
+        }
+" + variables + @"
+
+        public float this [int index]
+        {
+            get
+            {
+                switch (index)
+                {
+" + indexGetterCases + @"
+                }
+                return 0;
+            }
+            set
+            {
+                switch (index)
+                {
+" + indexSetterCases + @"
+                }
+            }
+        }
+    }
+
+    [RequireComponent(typeof(StateMachineUnitComponent), typeof(PositionComponent), typeof(RotationComponent))]
+    public class " + cleanName + @"Component : ComponentDataWrapper<" + cleanName + @"> { }
+}
+
+";
+            File.WriteAllText(componentPath, contents);
         }
     }
 

@@ -52,7 +52,7 @@
                     float3 normal = tex2Dlod(_NmlTex, float4(x, y, 0, 0));
                     v2f o;
                     v.vertex = o.pos = UnityObjectToClipPos(pos);
-                    v.normal = o.normal = UnityObjectToWorldNormal(normal);
+                    v.normal = o.normal = normal;
                     o.uv = v.texcoord;
                     half nl = max(0, dot(o.normal, _WorldSpaceLightPos0.xyz));
                     o.diff = nl * _LightColor0.rgb;
@@ -62,10 +62,10 @@
                 }
                 fixed4 frag (v2f i) : SV_Target
                 {
-                    fixed4 col = tex2D(_MainTex, i.uv) * _Color * 1.5;
-                    fixed shadow = SHADOW_ATTENUATION(i);
+                    fixed4 col = tex2D(_MainTex, i.uv) * _Color * 1.0;
+                    fixed shadow = SHADOW_ATTENUATION(i) * 0.5;
                     fixed3 lighting = i.diff * shadow + i.ambient;
-                    col.rgb *= lighting;
+                    col.rgb *= lighting * 1.5;
                     return col;
                 }
             ENDCG
@@ -77,11 +77,10 @@
         	CGPROGRAM
         		#pragma vertex vert
         		#pragma fragment frag
-        		#pragma target 4.5
+        		#pragma target 3.0
         		#pragma multi_compile_shadowcaster
         		#pragma multi_compile_instancing
         		#include "UnityCG.cginc"
-        		#pragma multi_compile ___ ANIM_LOOP
         		#define ts _PosTex_TexelSize
 
         		struct v2f {
@@ -99,14 +98,13 @@
         		v2f vert(appdata_base v, uint vid : SV_VertexID)
         		{
                     UNITY_SETUP_INSTANCE_ID(v);
-                    float x = (vid + 0.5) * ts.x;
                     float y = UNITY_ACCESS_INSTANCED_PROP(Props, _YPos);
+                    float x = (vid + 0.5) * ts.x;
                     float4 pos = tex2Dlod(_PosTex, float4(x, y, 0, 0));
                     float3 normal = tex2Dlod(_NmlTex, float4(x, y, 0, 0));
         			v2f o;
         			v.vertex = o.pos = pos;
-        			v.normal = o.normal = UnityObjectToWorldNormal(normal);
-        			UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
+        			v.normal = o.normal = normal;
         			TRANSFER_SHADOW_CASTER_NORMALOFFSET(o)
         			return o;
         		}

@@ -102,25 +102,25 @@ namespace AnimationBaker.StateMachine.Editor
                 rule.Variable = graph.variables[variableIndex];
                 rule.VariableName = rule.Variable.name;
             }
-
-            if (rule.Variable.VariableType != VariableType.Trigger)
+            switch (rule.Variable.VariableType)
             {
-
-                switch (rule.Variable.VariableType)
-                {
-                    case VariableType.Boolean:
-                        rule.QualifierBoolEnum = (TrueFalse) EditorGUILayout.EnumPopup(rule.QualifierBoolEnum);
-                        break;
-                    case VariableType.Float:
-                        rule.Qualifier = (Qualifier) EditorGUILayout.EnumPopup(rule.Qualifier);
-                        rule.QualifierFloatVal = EditorGUILayout.FloatField(rule.QualifierFloatVal);
-                        break;
-                    case VariableType.Integer:
-                        rule.Qualifier = (Qualifier) EditorGUILayout.EnumPopup(rule.Qualifier);
-                        rule.QualifierIntVal = EditorGUILayout.IntField(rule.QualifierIntVal);
-                        break;
-                }
-
+                case VariableType.Trigger:
+                    rule.Qualifier = Qualifier.Equal;
+                    rule.QualifierIntVal = 1;
+                    break;
+                case VariableType.Boolean:
+                    rule.QualifierBoolEnum = (TrueFalse) EditorGUILayout.EnumPopup(rule.QualifierBoolEnum);
+                    rule.QualifierIntVal = (int) rule.QualifierBoolEnum;
+                    rule.Qualifier = Qualifier.Equal;
+                    break;
+                case VariableType.Float:
+                    rule.Qualifier = (Qualifier) EditorGUILayout.EnumPopup(rule.Qualifier);
+                    rule.QualifierFloatVal = EditorGUILayout.FloatField(rule.QualifierFloatVal);
+                    break;
+                case VariableType.Integer:
+                    rule.Qualifier = (Qualifier) EditorGUILayout.EnumPopup(rule.Qualifier);
+                    rule.QualifierIntVal = EditorGUILayout.IntField(rule.QualifierIntVal);
+                    break;
             }
 
             if (GUILayout.Button("x", EditorStyles.miniButton, GUILayout.Width(23)) && ConfirmRemoveRule())

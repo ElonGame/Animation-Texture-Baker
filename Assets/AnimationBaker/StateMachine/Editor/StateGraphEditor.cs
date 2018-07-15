@@ -79,17 +79,6 @@ namespace AnimationBaker.StateMachine.Editor
             if (graph.Prefab == null) return;
 
             GUILayout.Space(4);
-
-            rect = EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Casts Shadows", GUILayout.Width(116));
-            graph.ShadowCastingMode = (ShadowCastingMode) EditorGUILayout.EnumPopup(graph.ShadowCastingMode);
-            EditorGUILayout.EndHorizontal();
-
-            rect = EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Receives Shadows", GUILayout.Width(116));
-            graph.ReceivesShadows = EditorGUILayout.Toggle(graph.ReceivesShadows);
-
-            EditorGUILayout.EndHorizontal();
         }
 
         private void DrawAnimations()

@@ -1,4 +1,5 @@
 using UnityEngine;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
@@ -9,7 +10,7 @@ namespace AnimationBaker.Systems
 {
     public class SyncStateMachineUnitTransforms : JobComponentSystem
     {
-
+        [BurstCompile]
         struct UpdateUnitTransformPositionRotationJob : IJobProcessComponentData<StateMachineUnit, Position, Rotation>
         {
             public void Execute([WriteOnly] ref StateMachineUnit unit, [ReadOnly] ref Position position, [ReadOnly] ref Rotation rotation)

@@ -7,6 +7,7 @@ using UnityEngine.Rendering;
 using UnityEditor;
 #endif
 using AnimationBaker.StateMachine.Nodes;
+using AnimationBaker.StateMachine.ScriptableObjects;
 using AnimationBaker.StateMachine.XNode;
 
 namespace AnimationBaker.StateMachine
@@ -15,16 +16,42 @@ namespace AnimationBaker.StateMachine
 	public class StateGraph : NodeGraph, ISerializationCallbackReceiver
 	{
 		public GameObject Prefab;
-		public ShadowCastingMode ShadowCastingMode = ShadowCastingMode.On;
-		public bool ReceivesShadows = true;
 		public int Vertices = 0;
 		public int PrefabHashCode = 0;
+		int _textureHeight;
+		public int TextureHeight
+		{
+			get
+			{
+				if (_textureHeight == 0)
+				{
+					foreach (BaseNode node in nodes)
+					{
+						if (node.FrameRate == 0) continue;
+						var delta = node.FrameRate * 0.001f;
+						var frame = Mathf.CeilToInt(node.Duration / delta);
+						_textureHeight += frame;
+					}
+					_textureHeight += 1;
+					_textureHeight = Mathf.NextPowerOfTwo(_textureHeight);
+				}
+				return _textureHeight;
+			}
+		}
+		public int TextureWidth
+		{
+			get
+			{
+				return Mathf.NextPowerOfTwo(Vertices + 1);
+			}
+		}
 		public Animation PrefabAnimation { get; set; }
 		public List<Mesh> meshes { get; set; }
 		public StartNode startNode;
 		public EndNode endNode;
 		public AnyNode anyNode;
 		public bool animationLoaded { get; set; }
+		public RendererData rendererData;
 
 		public bool HasAnimation
 		{
