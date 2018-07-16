@@ -35,7 +35,9 @@ namespace Example.StateMachine
 			world.GetOrCreateManager<SyncStateMachineUnitTransforms>();
 
 			AnimatorBootstrap.Create<Archer>(world, graphs[0]);
-			world.GetOrCreateManager<ArcherDebugSystem>();
+			AnimatorBootstrap.Create<Cerberus>(world, graphs[1]);
+			AnimatorBootstrap.Create<Mage>(world, graphs[2]);
+			AnimatorBootstrap.Create<Diablous>(world, graphs[3]);
 
 			manager = world.GetOrCreateManager<EntityManager>();
 			var allWorlds = new World[] { world };
@@ -55,16 +57,14 @@ namespace Example.StateMachine
 			for (int i = 0; i < 100; i++)
 			{
 				Spawn<Archer>();
+				Spawn<Cerberus>();
+				Spawn<Mage>();
+				Spawn<Diablous>();
 			}
 		}
 
 		private void Spawn<T>() where T : struct, IUnitState
 		{
-			// var position = new Vector3(
-			// 	10,
-			// 	0,
-			// 	10
-			// );
 			var position = new Vector3(
 				UnityEngine.Random.Range(10f, 90f),
 				0,

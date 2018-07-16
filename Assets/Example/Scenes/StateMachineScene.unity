@@ -397,6 +397,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   graphs:
   - {fileID: 11400000, guid: 9a9f703226d69c347812e278f9067d6f, type: 2}
+  - {fileID: 11400000, guid: 8e90bdb52d51cc748b8a44b139db65a0, type: 2}
+  - {fileID: 11400000, guid: 7594ce72e66c20641a68b82f00332fd2, type: 2}
+  - {fileID: 11400000, guid: c195ee63a5269dd41bc243ee91c3940e, type: 2}
 --- !u!1 &741706376
 GameObject:
   m_ObjectHideFlags: 0
