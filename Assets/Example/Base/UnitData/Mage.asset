@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b723a5a6106db6546a2dab72e7bf7335, type: 3}
+  m_Name: Mage
+  m_EditorClassIdentifier: 
+  Mesh: {fileID: 4300000, guid: 851a3629ab38d0047ac29342ee0dffe3, type: 2}
+  Material: {fileID: 2100000, guid: 68198f06712d2b2488928155ddfbbc5b, type: 2}
+  Health: 100
+  Damage: 20
+  AttackDistance: 15
+  AttackParticle: 2
+  MoveSpeed: 1
+  Faction: 0
+  AttackDuration: 1
+  AttackCooldown: 5
+  HitCooldown: 0.3
+  DyingCooldown: 0.5
+  DeadOffset: 0.9999

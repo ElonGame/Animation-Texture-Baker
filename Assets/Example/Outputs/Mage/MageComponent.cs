@@ -78,3 +78,4 @@ namespace AnimationBaker.Baked
     [RequireComponent(typeof(StateMachineUnitComponent), typeof(PositionComponent), typeof(RotationComponent))]
     public class MageComponent : ComponentDataWrapper<Mage> { }
 }
+
