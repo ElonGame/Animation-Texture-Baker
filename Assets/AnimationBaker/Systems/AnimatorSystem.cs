@@ -170,14 +170,14 @@ namespace AnimationBaker.Systems
             }
         }
 
-        struct InjectData
+        struct InjectAnimatorData
         {
             public readonly int Length;
             public ComponentDataArray<T> components;
             public ComponentDataArray<StateMachineUnit> stateDatas;
         }
 
-        [Inject] private InjectData injectDatas;
+        [Inject] private InjectAnimatorData injectAnimatorDatas;
         [Inject] private ComponentDataFromEntity<T> currentData;
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
@@ -185,10 +185,10 @@ namespace AnimationBaker.Systems
             {
                 Setup();
             }
+            var rendererHandle = Render(inputDeps);
             ApplyUpdates(currentData);
-            var handle = new UpdateComponentDataJob<T> { dt = Time.deltaTime, components = injectDatas.components, stateDatas = injectDatas.stateDatas, anyStateIndex = anyStateIndex, transitions = transitions, states = states, frameStart = frameStart, singleFrame = 1f / StateGraph.TextureHeight }.Schedule(injectDatas.Length, 64, inputDeps);
-            handle.Complete();
-            Render();
+            var handle = new UpdateComponentDataJob<T> { dt = Time.deltaTime, components = injectAnimatorDatas.components, stateDatas = injectAnimatorDatas.stateDatas, anyStateIndex = anyStateIndex, transitions = transitions, states = states, frameStart = frameStart, singleFrame = 1f / StateGraph.TextureHeight }.Schedule(injectAnimatorDatas.Length, 64, rendererHandle);
+            // handle.Complete();
             return handle;
         }
 

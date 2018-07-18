@@ -30,8 +30,8 @@ namespace AnimationBaker.Baked
             set;
         }
 
-        public int IsHit; // 0
-        public int Attack; // 1
+        public int Attack; // 0
+        public int GotHit; // 1
         public float MoveSpeed; // 2
         public int IsDead; // 3
 
@@ -43,9 +43,9 @@ namespace AnimationBaker.Baked
                 {
 
                     case 0:
-                        return IsHit;
-                    case 1:
                         return Attack;
+                    case 1:
+                        return GotHit;
                     case 2:
                         return MoveSpeed;
                     case 3:
@@ -59,10 +59,10 @@ namespace AnimationBaker.Baked
                 {
 
                     case 0:
-                        IsHit = (int) value;
+                        Attack = (int) value;
                         break;
                     case 1:
-                        Attack = (int) value;
+                        GotHit = (int) value;
                         break;
                     case 2:
                         MoveSpeed = value;

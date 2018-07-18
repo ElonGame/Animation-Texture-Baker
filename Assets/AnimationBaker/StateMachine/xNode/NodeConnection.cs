@@ -59,7 +59,7 @@ namespace AnimationBaker.StateMachine.XNode
                 var rule = ScriptableObject.CreateInstance<TransitionRule>();
                 rule.graph = (StateGraph) fromNode.graph;
                 rule.Variable = variable;
-                rule.VariableName = variable.name;
+                // rule.VariableName = variable.name;
                 rules.Add(rule);
                 return rule;
             }

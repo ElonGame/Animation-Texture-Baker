@@ -30,11 +30,11 @@ namespace Example.Systems
             if (components.Length < 1) return;
             if (Input.GetKeyUp(KeyCode.Q))
             {
-                archerSystem.SetTrigger(components.entities[0], "DoAttack");
+                archerSystem.SetTrigger(components.entities[0], "Attack");
             }
             if (Input.GetKeyUp(KeyCode.W))
             {
-                archerSystem.SetTrigger(components.entities[0], "IsHit");
+                archerSystem.SetTrigger(components.entities[0], "GotHit");
             }
             if (Input.GetKeyUp(KeyCode.E))
             {

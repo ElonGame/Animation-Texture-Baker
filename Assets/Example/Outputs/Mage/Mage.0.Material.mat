@@ -23,11 +23,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NmlTex:
-        m_Texture: {fileID: 2800000, guid: 1ae7dc4112eb34641816174112ffd4bc, type: 2}
+        m_Texture: {fileID: 2800000, guid: 6eae627897866724bb432c21484aebcb, type: 2}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _PosTex:
-        m_Texture: {fileID: 2800000, guid: 1309bad843216e94f876a5f396e4dd8b, type: 2}
+        m_Texture: {fileID: 2800000, guid: 98c291ceb7fe83642b5b7e43ffd53516, type: 2}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats: []

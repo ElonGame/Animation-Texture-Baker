@@ -142,7 +142,7 @@ namespace AnimationBaker.StateMachine
 		{
 			LoadAnimationStates();
 			FindKeyNodes();
-			SyncVariables();
+			// SyncVariables();
 			RecalculateMesh();
 		}
 
@@ -156,14 +156,9 @@ namespace AnimationBaker.StateMachine
 					{
 						foreach (var rule in connection.rules)
 						{
-							if (rule.Variable != null) continue;
-							foreach (var variable in variables)
-							{
-								if (variable.name == rule.VariableName)
-								{
-									rule.Variable = variable;
-								}
-							}
+							if (rule.Variable == null) continue;
+							Destroy(rule);
+							EditorUtility.SetDirty(rule);
 						}
 					}
 				}

@@ -33,11 +33,14 @@ namespace Example.StateMachine
 			world.GetOrCreateManager<NavAgentToPositionSyncSystem>();
 			world.GetOrCreateManager<NavAgentToRotationSyncSystem>();
 			world.GetOrCreateManager<SyncStateMachineUnitTransforms>();
+			world.GetOrCreateManager<ArcherDebugSystem>();
 
 			AnimatorBootstrap.Create<Archer>(world, graphs[0]);
 			AnimatorBootstrap.Create<Cerberus>(world, graphs[1]);
-			AnimatorBootstrap.Create<Mage>(world, graphs[2]);
-			AnimatorBootstrap.Create<Diablous>(world, graphs[3]);
+			AnimatorBootstrap.Create<Diablous>(world, graphs[2]);
+			AnimatorBootstrap.Create<Knight>(world, graphs[3]);
+			AnimatorBootstrap.Create<Mage>(world, graphs[4]);
+			AnimatorBootstrap.Create<Sorceress>(world, graphs[5]);
 
 			manager = world.GetOrCreateManager<EntityManager>();
 			var allWorlds = new World[] { world };
@@ -60,6 +63,8 @@ namespace Example.StateMachine
 				Spawn<Cerberus>();
 				Spawn<Mage>();
 				Spawn<Diablous>();
+				Spawn<Sorceress>();
+				Spawn<Knight>();
 			}
 		}
 

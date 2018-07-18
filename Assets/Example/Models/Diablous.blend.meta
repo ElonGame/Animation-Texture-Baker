@@ -1,7 +1,7 @@
 fileFormatVersion: 2
 guid: 3a2e2aa2beaff834aaaeb457f69fad9e
 ModelImporter:
-  serializedVersion: 23
+  serializedVersion: 22
   fileIDToRecycleName:
     100000: ankle_l
     100002: ankle_r
@@ -244,12 +244,17 @@ ModelImporter:
     13700000: Knight
     13700002: Cube
     2186277476908879412: ImportLogs
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: diablous_mat__diablous_texture_png
+    second: {fileID: 2100000, guid: dc9f2f15beb5fa74e9e508953ede4399, type: 2}
   materials:
     importMaterials: 1
     materialName: 0
     materialSearch: 1
-    materialLocation: 0
+    materialLocation: 1
   animations:
     legacyGenerateAnimations: 4
     bakeSimulation: 0
@@ -435,8 +440,6 @@ ModelImporter:
     secondaryUVHardAngle: 88
     secondaryUVPackMargin: 4
     useFileScale: 1
-    previousCalculatedGlobalScale: 1
-    hasPreviousCalculatedGlobalScale: 1
   tangentSpace:
     normalSmoothAngle: 60
     normalImportMode: 0

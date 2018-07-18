@@ -12,29 +12,46 @@ MonoBehaviour:
   m_Name: Diablous
   m_EditorClassIdentifier: 
   variables:
-  - {fileID: 114084560849744958}
-  - {fileID: 114978098219123996}
-  - {fileID: 114065120936187776}
-  - {fileID: 114553674266907766}
+  - {fileID: 114612239415562138}
+  - {fileID: 114703802003082670}
+  - {fileID: 114544396618805572}
+  - {fileID: 114615947893271036}
   nodes:
-  - {fileID: 114054006115999620}
-  - {fileID: 114823137118396556}
-  - {fileID: 114927491737396964}
-  - {fileID: 114818464726637716}
-  - {fileID: 114048950857013586}
-  - {fileID: 114301133918240068}
-  - {fileID: 114084081917316416}
-  - {fileID: 114771835007062978}
+  - {fileID: 114840133673414102}
+  - {fileID: 114786160193964040}
+  - {fileID: 114856974152665952}
+  - {fileID: 114454699970176920}
+  - {fileID: 114070867348946792}
+  - {fileID: 114313684880823544}
+  - {fileID: 114832547139231958}
+  - {fileID: 114634772484608140}
   booted: 1
-  dragPosition: {x: -289, y: -51}
+  dragPosition: {x: 0, y: 0}
   Prefab: {fileID: 100052, guid: 3a2e2aa2beaff834aaaeb457f69fad9e, type: 3}
   Vertices: 373
-  PrefabHashCode: 4194
-  startNode: {fileID: 114823137118396556}
-  endNode: {fileID: 114054006115999620}
-  anyNode: {fileID: 114927491737396964}
-  rendererData: {fileID: 114392040374550564}
---- !u!114 &114048950857013586
+  PrefabHashCode: 3908
+  startNode: {fileID: 114786160193964040}
+  endNode: {fileID: 114840133673414102}
+  anyNode: {fileID: 114856974152665952}
+  rendererData: {fileID: 114047682098267984}
+--- !u!114 &114047682098267984
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a89f0b19be2117f468c953deaf88294e, type: 3}
+  m_Name: RendererData
+  m_EditorClassIdentifier: 
+  Mesh: {fileID: 4300000, guid: 1451751c264f410499a8308ee33d0118, type: 2}
+  SubMeshCount: 1
+  Materials:
+  - {fileID: 2100000, guid: 7055f4fed70955e44996d1d40e1cb3bb, type: 2}
+  ShadowCastingMode: 1
+  ReceivesShadows: 1
+--- !u!114 &114070867348946792
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
@@ -43,49 +60,48 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0894a04e6b93a594e8b4cdfdc3bc6c72, type: 3}
-  m_Name: Walk
+  m_Name: Attack
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -296, y: 72}
+  position: {x: 488, y: 168}
   ports:
     keys:
     - Input
     - Output
     values:
     - _fieldName: Input
-      _node: {fileID: 114048950857013586}
+      _node: {fileID: 114070867348946792}
       _typeQualifiedName: AnimationBaker.StateMachine.Nodes.BaseNode+Empty, Assembly-CSharp,
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       connections:
       - name: Output
-        fromNode: {fileID: 114048950857013586}
-        toNode: {fileID: 114818464726637716}
+        fromNode: {fileID: 114070867348946792}
+        toNode: {fileID: 114856974152665952}
         reroutePoints: []
         rules: []
       _direction: 0
       _connectionType: 0
       _dynamic: 1
     - _fieldName: Output
-      _node: {fileID: 114048950857013586}
+      _node: {fileID: 114070867348946792}
       _typeQualifiedName: AnimationBaker.StateMachine.Nodes.BaseNode+Empty, Assembly-CSharp,
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       connections:
       - name: Input
-        fromNode: {fileID: 114048950857013586}
-        toNode: {fileID: 114054006115999620}
+        fromNode: {fileID: 114070867348946792}
+        toNode: {fileID: 114840133673414102}
         reroutePoints: []
-        rules:
-        - {fileID: 114647573620329290}
+        rules: []
       _direction: 1
       _connectionType: 0
       _dynamic: 1
   FrameRate: 24
-  WrapMode: 2
-  Duration: 1
+  WrapMode: 1
+  Duration: 2.0833335
   RulesToggles:
-    keys: 9b63e8b6
-    values: 01
---- !u!114 &114054006115999620
+    keys: 
+    values: 
+--- !u!114 &114177449262979226
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
@@ -93,50 +109,185 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7d0130d41888c1a48bb8d4cf1310976f, type: 3}
-  m_Name: End
+  m_Script: {fileID: 11500000, guid: 902413581e9c8cd4882fcf40fff1b2f7, type: 3}
+  m_Name: DieEndRule_1
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -40, y: 232}
+  Variable: {fileID: 114615947893271036}
+  Qualifier: 1
+  QualifierBoolVal: 0
+  QualifierFloatVal: 0
+  QualifierIntVal: 0
+--- !u!114 &114229332619863582
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 902413581e9c8cd4882fcf40fff1b2f7, type: 3}
+  m_Name: WalkEndRule_1
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  Variable: {fileID: 114544396618805572}
+  Qualifier: 2
+  QualifierBoolVal: 0
+  QualifierFloatVal: 0
+  QualifierIntVal: 1
+--- !u!114 &114313684880823544
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0894a04e6b93a594e8b4cdfdc3bc6c72, type: 3}
+  m_Name: Die
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: -40, y: 168}
   ports:
     keys:
     - Input
+    - Output
     values:
     - _fieldName: Input
-      _node: {fileID: 114054006115999620}
+      _node: {fileID: 114313684880823544}
       _typeQualifiedName: AnimationBaker.StateMachine.Nodes.BaseNode+Empty, Assembly-CSharp,
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       connections:
       - name: Output
-        fromNode: {fileID: 114054006115999620}
-        toNode: {fileID: 114048950857013586}
-        reroutePoints: []
-        rules: []
-      - name: Output
-        fromNode: {fileID: 114054006115999620}
-        toNode: {fileID: 114771835007062978}
-        reroutePoints: []
-        rules: []
-      - name: Output
-        fromNode: {fileID: 114054006115999620}
-        toNode: {fileID: 114084081917316416}
-        reroutePoints: []
-        rules: []
-      - name: Output
-        fromNode: {fileID: 114054006115999620}
-        toNode: {fileID: 114301133918240068}
+        fromNode: {fileID: 114313684880823544}
+        toNode: {fileID: 114856974152665952}
         reroutePoints: []
         rules: []
       _direction: 0
       _connectionType: 0
       _dynamic: 1
-  FrameRate: 0
-  WrapMode: 0
-  Duration: 0
+    - _fieldName: Output
+      _node: {fileID: 114313684880823544}
+      _typeQualifiedName: AnimationBaker.StateMachine.Nodes.BaseNode+Empty, Assembly-CSharp,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      connections:
+      - name: Input
+        fromNode: {fileID: 114313684880823544}
+        toNode: {fileID: 114840133673414102}
+        reroutePoints: []
+        rules:
+        - {fileID: 114177449262979226}
+      _direction: 1
+      _connectionType: 0
+      _dynamic: 1
+  FrameRate: 24
+  WrapMode: 8
+  Duration: 1.875
+  RulesToggles:
+    keys: 9b63e8b6
+    values: 01
+--- !u!114 &114375817179366672
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 902413581e9c8cd4882fcf40fff1b2f7, type: 3}
+  m_Name: Any StateDieRule_1
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  Variable: {fileID: 114615947893271036}
+  Qualifier: 1
+  QualifierBoolVal: 1
+  QualifierFloatVal: 0
+  QualifierIntVal: 1
+--- !u!114 &114454699970176920
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0894a04e6b93a594e8b4cdfdc3bc6c72, type: 3}
+  m_Name: Hit
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 232, y: 168}
+  ports:
+    keys:
+    - Input
+    - Output
+    values:
+    - _fieldName: Input
+      _node: {fileID: 114454699970176920}
+      _typeQualifiedName: AnimationBaker.StateMachine.Nodes.BaseNode+Empty, Assembly-CSharp,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      connections:
+      - name: Output
+        fromNode: {fileID: 114454699970176920}
+        toNode: {fileID: 114856974152665952}
+        reroutePoints: []
+        rules: []
+      _direction: 0
+      _connectionType: 0
+      _dynamic: 1
+    - _fieldName: Output
+      _node: {fileID: 114454699970176920}
+      _typeQualifiedName: AnimationBaker.StateMachine.Nodes.BaseNode+Empty, Assembly-CSharp,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      connections:
+      - name: Input
+        fromNode: {fileID: 114454699970176920}
+        toNode: {fileID: 114840133673414102}
+        reroutePoints: []
+        rules: []
+      _direction: 1
+      _connectionType: 0
+      _dynamic: 1
+  FrameRate: 24
+  WrapMode: 1
+  Duration: 0.9166667
   RulesToggles:
     keys: 
     values: 
---- !u!114 &114065120936187776
+--- !u!114 &114535016873415300
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 902413581e9c8cd4882fcf40fff1b2f7, type: 3}
+  m_Name: IdleWalkRule_1
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  Variable: {fileID: 114544396618805572}
+  Qualifier: 5
+  QualifierBoolVal: 0
+  QualifierFloatVal: 0
+  QualifierIntVal: 1
+--- !u!114 &114538069978595398
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 902413581e9c8cd4882fcf40fff1b2f7, type: 3}
+  m_Name: Any StateAttackRule_1
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  Variable: {fileID: 114703802003082670}
+  Qualifier: 1
+  QualifierBoolVal: 0
+  QualifierFloatVal: 0
+  QualifierIntVal: 1
+--- !u!114 &114544396618805572
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
@@ -151,57 +302,7 @@ MonoBehaviour:
   DefaultFloatVal: 0
   DefaultIntVal: 0
   DefaultBoolVal: 0
---- !u!114 &114084081917316416
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0894a04e6b93a594e8b4cdfdc3bc6c72, type: 3}
-  m_Name: Attack
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  position: {x: 184, y: 72}
-  ports:
-    keys:
-    - Input
-    - Output
-    values:
-    - _fieldName: Input
-      _node: {fileID: 114084081917316416}
-      _typeQualifiedName: AnimationBaker.StateMachine.Nodes.BaseNode+Empty, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      connections:
-      - name: Output
-        fromNode: {fileID: 114084081917316416}
-        toNode: {fileID: 114927491737396964}
-        reroutePoints: []
-        rules: []
-      _direction: 0
-      _connectionType: 0
-      _dynamic: 1
-    - _fieldName: Output
-      _node: {fileID: 114084081917316416}
-      _typeQualifiedName: AnimationBaker.StateMachine.Nodes.BaseNode+Empty, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      connections:
-      - name: Input
-        fromNode: {fileID: 114084081917316416}
-        toNode: {fileID: 114054006115999620}
-        reroutePoints: []
-        rules: []
-      _direction: 1
-      _connectionType: 0
-      _dynamic: 1
-  FrameRate: 24
-  WrapMode: 1
-  Duration: 2.0833335
-  RulesToggles:
-    keys: 
-    values: 
---- !u!114 &114084560849744958
+--- !u!114 &114612239415562138
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
@@ -210,97 +311,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b1664fa262e3d8d4790e21d889ec6b48, type: 3}
-  m_Name: IsHit
+  m_Name: GotHit
   m_EditorClassIdentifier: 
   VariableType: 3
   DefaultFloatVal: 0
   DefaultIntVal: 0
   DefaultBoolVal: 0
---- !u!114 &114180365195657416
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 902413581e9c8cd4882fcf40fff1b2f7, type: 3}
-  m_Name: Any StateAttackRule_1
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  VariableName: Attack
-  Qualifier: 1
-  QualifierBoolVal: 0
-  QualifierFloatVal: 0
-  QualifierIntVal: 1
---- !u!114 &114301133918240068
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0894a04e6b93a594e8b4cdfdc3bc6c72, type: 3}
-  m_Name: Hit
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  position: {x: 408, y: 72}
-  ports:
-    keys:
-    - Input
-    - Output
-    values:
-    - _fieldName: Input
-      _node: {fileID: 114301133918240068}
-      _typeQualifiedName: AnimationBaker.StateMachine.Nodes.BaseNode+Empty, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      connections:
-      - name: Output
-        fromNode: {fileID: 114301133918240068}
-        toNode: {fileID: 114927491737396964}
-        reroutePoints: []
-        rules: []
-      _direction: 0
-      _connectionType: 0
-      _dynamic: 1
-    - _fieldName: Output
-      _node: {fileID: 114301133918240068}
-      _typeQualifiedName: AnimationBaker.StateMachine.Nodes.BaseNode+Empty, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      connections:
-      - name: Input
-        fromNode: {fileID: 114301133918240068}
-        toNode: {fileID: 114054006115999620}
-        reroutePoints: []
-        rules: []
-      _direction: 1
-      _connectionType: 0
-      _dynamic: 1
-  FrameRate: 24
-  WrapMode: 1
-  Duration: 0.9166667
-  RulesToggles:
-    keys: 
-    values: 
---- !u!114 &114392040374550564
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a89f0b19be2117f468c953deaf88294e, type: 3}
-  m_Name: RendererData
-  m_EditorClassIdentifier: 
-  Mesh: {fileID: 4300000, guid: f5214c8e9854a87488481c6dbcd9de14, type: 2}
-  SubMeshCount: 1
-  Materials:
-  - {fileID: 2100000, guid: 276718e0e4449e04186a0a51e5d8c5ff, type: 2}
-  ShadowCastingMode: 1
-  ReceivesShadows: 1
---- !u!114 &114553674266907766
+--- !u!114 &114615947893271036
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
@@ -315,58 +332,7 @@ MonoBehaviour:
   DefaultFloatVal: 0
   DefaultIntVal: 0
   DefaultBoolVal: 0
---- !u!114 &114647573620329290
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 902413581e9c8cd4882fcf40fff1b2f7, type: 3}
-  m_Name: WalkEndRule_1
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  VariableName: MoveSpeed
-  Qualifier: 2
-  QualifierBoolVal: 0
-  QualifierFloatVal: 0
-  QualifierIntVal: 1
---- !u!114 &114747973661893404
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 902413581e9c8cd4882fcf40fff1b2f7, type: 3}
-  m_Name: IdleWalkRule_1
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  VariableName: MoveSpeed
-  Qualifier: 5
-  QualifierBoolVal: 0
-  QualifierFloatVal: 0
-  QualifierIntVal: 1
---- !u!114 &114758502383755192
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 902413581e9c8cd4882fcf40fff1b2f7, type: 3}
-  m_Name: Any StateDieRule_1
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  VariableName: IsDead
-  Qualifier: 1
-  QualifierBoolVal: 1
-  QualifierFloatVal: 0
-  QualifierIntVal: 1
---- !u!114 &114771835007062978
+--- !u!114 &114634772484608140
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
@@ -375,219 +341,49 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0894a04e6b93a594e8b4cdfdc3bc6c72, type: 3}
-  m_Name: Die
+  m_Name: Walk
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: -40, y: 72}
+  position: {x: -296, y: 168}
   ports:
     keys:
     - Input
     - Output
     values:
     - _fieldName: Input
-      _node: {fileID: 114771835007062978}
+      _node: {fileID: 114634772484608140}
       _typeQualifiedName: AnimationBaker.StateMachine.Nodes.BaseNode+Empty, Assembly-CSharp,
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       connections:
       - name: Output
-        fromNode: {fileID: 114771835007062978}
-        toNode: {fileID: 114927491737396964}
+        fromNode: {fileID: 114634772484608140}
+        toNode: {fileID: 114832547139231958}
         reroutePoints: []
         rules: []
       _direction: 0
       _connectionType: 0
       _dynamic: 1
     - _fieldName: Output
-      _node: {fileID: 114771835007062978}
+      _node: {fileID: 114634772484608140}
       _typeQualifiedName: AnimationBaker.StateMachine.Nodes.BaseNode+Empty, Assembly-CSharp,
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       connections:
       - name: Input
-        fromNode: {fileID: 114771835007062978}
-        toNode: {fileID: 114054006115999620}
+        fromNode: {fileID: 114634772484608140}
+        toNode: {fileID: 114840133673414102}
         reroutePoints: []
         rules:
-        - {fileID: 114801463523279908}
-      _direction: 1
-      _connectionType: 0
-      _dynamic: 1
-  FrameRate: 24
-  WrapMode: 8
-  Duration: 1.875
-  RulesToggles:
-    keys: 9b63e8b6
-    values: 01
---- !u!114 &114801463523279908
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 902413581e9c8cd4882fcf40fff1b2f7, type: 3}
-  m_Name: DieEndRule_1
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  VariableName: IsDead
-  Qualifier: 1
-  QualifierBoolVal: 0
-  QualifierFloatVal: 0
-  QualifierIntVal: 0
---- !u!114 &114818464726637716
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0894a04e6b93a594e8b4cdfdc3bc6c72, type: 3}
-  m_Name: Idle
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  position: {x: -296, y: -24}
-  ports:
-    keys:
-    - Input
-    - Output
-    values:
-    - _fieldName: Input
-      _node: {fileID: 114818464726637716}
-      _typeQualifiedName: AnimationBaker.StateMachine.Nodes.BaseNode+Empty, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      connections:
-      - name: Output
-        fromNode: {fileID: 114818464726637716}
-        toNode: {fileID: 114823137118396556}
-        reroutePoints: []
-        rules: []
-      _direction: 0
-      _connectionType: 0
-      _dynamic: 1
-    - _fieldName: Output
-      _node: {fileID: 114818464726637716}
-      _typeQualifiedName: AnimationBaker.StateMachine.Nodes.BaseNode+Empty, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      connections:
-      - name: Input
-        fromNode: {fileID: 114818464726637716}
-        toNode: {fileID: 114048950857013586}
-        reroutePoints: []
-        rules:
-        - {fileID: 114747973661893404}
+        - {fileID: 114229332619863582}
       _direction: 1
       _connectionType: 0
       _dynamic: 1
   FrameRate: 24
   WrapMode: 2
-  Duration: 0.8333334
+  Duration: 1
   RulesToggles:
-    keys: e9719da5
+    keys: 9b63e8b6
     values: 01
---- !u!114 &114823137118396556
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2b14cea0540360349b44b01a32e15f28, type: 3}
-  m_Name: Start
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  position: {x: -296, y: -120}
-  ports:
-    keys:
-    - Output
-    values:
-    - _fieldName: Output
-      _node: {fileID: 114823137118396556}
-      _typeQualifiedName: AnimationBaker.StateMachine.Nodes.BaseNode+Empty, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      connections:
-      - name: Input
-        fromNode: {fileID: 114823137118396556}
-        toNode: {fileID: 114818464726637716}
-        reroutePoints: []
-        rules: []
-      _direction: 1
-      _connectionType: 1
-      _dynamic: 1
-  FrameRate: 0
-  WrapMode: 0
-  Duration: 0
-  RulesToggles:
-    keys: 
-    values: 
---- !u!114 &114927491737396964
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bca76dc2279295a48b82936728ab0db2, type: 3}
-  m_Name: Any State
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  position: {x: 184, y: -72}
-  ports:
-    keys:
-    - Output
-    values:
-    - _fieldName: Output
-      _node: {fileID: 114927491737396964}
-      _typeQualifiedName: AnimationBaker.StateMachine.Nodes.BaseNode+Empty, Assembly-CSharp,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      connections:
-      - name: Input
-        fromNode: {fileID: 114927491737396964}
-        toNode: {fileID: 114771835007062978}
-        reroutePoints: []
-        rules:
-        - {fileID: 114758502383755192}
-      - name: Input
-        fromNode: {fileID: 114927491737396964}
-        toNode: {fileID: 114084081917316416}
-        reroutePoints: []
-        rules:
-        - {fileID: 114180365195657416}
-      - name: Input
-        fromNode: {fileID: 114927491737396964}
-        toNode: {fileID: 114301133918240068}
-        reroutePoints: []
-        rules:
-        - {fileID: 114931265563850712}
-      _direction: 1
-      _connectionType: 0
-      _dynamic: 1
-  FrameRate: 0
-  WrapMode: 0
-  Duration: 0
-  RulesToggles:
-    keys: e0ef40147aa56cf775f14014
-    values: 010101
---- !u!114 &114931265563850712
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 902413581e9c8cd4882fcf40fff1b2f7, type: 3}
-  m_Name: Any StateHitRule_1
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  VariableName: IsHit
-  Qualifier: 1
-  QualifierBoolVal: 0
-  QualifierFloatVal: 0
-  QualifierIntVal: 1
---- !u!114 &114978098219123996
+--- !u!114 &114703802003082670
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
@@ -602,3 +398,207 @@ MonoBehaviour:
   DefaultFloatVal: 0
   DefaultIntVal: 0
   DefaultBoolVal: 0
+--- !u!114 &114786160193964040
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b14cea0540360349b44b01a32e15f28, type: 3}
+  m_Name: Start
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: -296, y: -24}
+  ports:
+    keys:
+    - Output
+    values:
+    - _fieldName: Output
+      _node: {fileID: 114786160193964040}
+      _typeQualifiedName: AnimationBaker.StateMachine.Nodes.BaseNode+Empty, Assembly-CSharp,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      connections:
+      - name: Input
+        fromNode: {fileID: 114786160193964040}
+        toNode: {fileID: 114832547139231958}
+        reroutePoints: []
+        rules: []
+      _direction: 1
+      _connectionType: 1
+      _dynamic: 1
+  FrameRate: 0
+  WrapMode: 0
+  Duration: 0
+  RulesToggles:
+    keys: 
+    values: 
+--- !u!114 &114832547139231958
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0894a04e6b93a594e8b4cdfdc3bc6c72, type: 3}
+  m_Name: Idle
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: -296, y: 72}
+  ports:
+    keys:
+    - Input
+    - Output
+    values:
+    - _fieldName: Input
+      _node: {fileID: 114832547139231958}
+      _typeQualifiedName: AnimationBaker.StateMachine.Nodes.BaseNode+Empty, Assembly-CSharp,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      connections:
+      - name: Output
+        fromNode: {fileID: 114832547139231958}
+        toNode: {fileID: 114786160193964040}
+        reroutePoints: []
+        rules: []
+      _direction: 0
+      _connectionType: 0
+      _dynamic: 1
+    - _fieldName: Output
+      _node: {fileID: 114832547139231958}
+      _typeQualifiedName: AnimationBaker.StateMachine.Nodes.BaseNode+Empty, Assembly-CSharp,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      connections:
+      - name: Input
+        fromNode: {fileID: 114832547139231958}
+        toNode: {fileID: 114634772484608140}
+        reroutePoints: []
+        rules:
+        - {fileID: 114535016873415300}
+      _direction: 1
+      _connectionType: 0
+      _dynamic: 1
+  FrameRate: 24
+  WrapMode: 2
+  Duration: 0.8333334
+  RulesToggles:
+    keys: e9719da5
+    values: 01
+--- !u!114 &114840133673414102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d0130d41888c1a48bb8d4cf1310976f, type: 3}
+  m_Name: End
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: -296, y: 264}
+  ports:
+    keys:
+    - Input
+    values:
+    - _fieldName: Input
+      _node: {fileID: 114840133673414102}
+      _typeQualifiedName: AnimationBaker.StateMachine.Nodes.BaseNode+Empty, Assembly-CSharp,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      connections:
+      - name: Output
+        fromNode: {fileID: 114840133673414102}
+        toNode: {fileID: 114313684880823544}
+        reroutePoints: []
+        rules: []
+      - name: Output
+        fromNode: {fileID: 114840133673414102}
+        toNode: {fileID: 114634772484608140}
+        reroutePoints: []
+        rules: []
+      - name: Output
+        fromNode: {fileID: 114840133673414102}
+        toNode: {fileID: 114454699970176920}
+        reroutePoints: []
+        rules: []
+      - name: Output
+        fromNode: {fileID: 114840133673414102}
+        toNode: {fileID: 114070867348946792}
+        reroutePoints: []
+        rules: []
+      _direction: 0
+      _connectionType: 0
+      _dynamic: 1
+  FrameRate: 0
+  WrapMode: 0
+  Duration: 0
+  RulesToggles:
+    keys: 
+    values: 
+--- !u!114 &114856974152665952
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bca76dc2279295a48b82936728ab0db2, type: 3}
+  m_Name: Any State
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 232, y: 56}
+  ports:
+    keys:
+    - Output
+    values:
+    - _fieldName: Output
+      _node: {fileID: 114856974152665952}
+      _typeQualifiedName: AnimationBaker.StateMachine.Nodes.BaseNode+Empty, Assembly-CSharp,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+      connections:
+      - name: Input
+        fromNode: {fileID: 114856974152665952}
+        toNode: {fileID: 114313684880823544}
+        reroutePoints: []
+        rules:
+        - {fileID: 114375817179366672}
+      - name: Input
+        fromNode: {fileID: 114856974152665952}
+        toNode: {fileID: 114454699970176920}
+        reroutePoints: []
+        rules:
+        - {fileID: 114968719373749712}
+      - name: Input
+        fromNode: {fileID: 114856974152665952}
+        toNode: {fileID: 114070867348946792}
+        reroutePoints: []
+        rules:
+        - {fileID: 114538069978595398}
+      _direction: 1
+      _connectionType: 0
+      _dynamic: 1
+  FrameRate: 0
+  WrapMode: 0
+  Duration: 0
+  RulesToggles:
+    keys: e0ef401475f140147aa56cf7
+    values: 010101
+--- !u!114 &114968719373749712
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 902413581e9c8cd4882fcf40fff1b2f7, type: 3}
+  m_Name: Any StateHitRule_1
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  Variable: {fileID: 114612239415562138}
+  Qualifier: 1
+  QualifierBoolVal: 0
+  QualifierFloatVal: 0
+  QualifierIntVal: 1

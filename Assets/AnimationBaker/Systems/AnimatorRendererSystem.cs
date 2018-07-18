@@ -35,12 +35,31 @@ namespace AnimationBaker.Systems
         Matrix4x4[] tempMatrices = new Matrix4x4[1023];
         float[] tempYPositions = new float[1023];
 
-        protected void Render()
+        struct InjectRendererData
         {
-            UpdateRendererData();
-            for (int i = 0; i < injectDatas.Length; i += 1023)
+            public readonly int Length;
+            [ReadOnly] public ComponentDataArray<T> components;
+            [ReadOnly] public ComponentDataArray<StateMachineUnit> stateDatas;
+        }
+
+        [Inject] private InjectRendererData injectRendererDatas;
+
+        protected JobHandle Render(JobHandle inputDeps)
+        {
+            if (injectRendererDatas.Length != rendererData.Length)
             {
-                var len = Mathf.Min(injectDatas.Length - i, 1023);
+                DestroyRendererArrays();
+                CreateRendererArrays(injectRendererDatas.Length);
+                rendererData = new RendererData(injectRendererDatas.Length);
+            }
+            var handle = new UpdateDataJob { matrices = matrices, yPositions = yPositions, units = injectRendererDatas.stateDatas }.Schedule(injectRendererDatas.Length, 64, inputDeps);
+            handle.Complete();
+            matrices.CopyTo(rendererData.matrices);
+            yPositions.CopyTo(rendererData.yPositions);
+
+            for (int i = 0; i < injectRendererDatas.Length; i += 1023)
+            {
+                var len = Mathf.Min(injectRendererDatas.Length - i, 1023);
                 Array.Copy(rendererData.matrices, i, tempMatrices, 0, len);
                 Array.Copy(rendererData.yPositions, i, tempYPositions, 0, len);
                 materialPropertyBlock.SetFloatArray("_YPos", tempYPositions);
@@ -49,6 +68,8 @@ namespace AnimationBaker.Systems
                     Graphics.DrawMeshInstanced(StateGraph.rendererData.Mesh, j, StateGraph.rendererData.Materials[j], tempMatrices, len, materialPropertyBlock, StateGraph.rendererData.ShadowCastingMode, StateGraph.rendererData.ReceivesShadows);
                 }
             }
+
+            return handle;
         }
 
         [BurstCompile]
@@ -67,10 +88,10 @@ namespace AnimationBaker.Systems
 
         protected void DestroyRenderer()
         {
-            DestroyArrays();
+            DestroyRendererArrays();
         }
 
-        private void DestroyArrays()
+        private void DestroyRendererArrays()
         {
             if (yPositions.IsCreated)
                 yPositions.Dispose();
@@ -78,24 +99,10 @@ namespace AnimationBaker.Systems
                 matrices.Dispose();
         }
 
-        private void CreateArrays(int length)
+        private void CreateRendererArrays(int length)
         {
             yPositions = new NativeArray<float>(length, Allocator.Persistent);
             matrices = new NativeArray<Matrix4x4>(length, Allocator.Persistent);
-        }
-
-        private void UpdateRendererData()
-        {
-            if (injectDatas.Length != rendererData.Length)
-            {
-                DestroyArrays();
-                CreateArrays(injectDatas.Length);
-                rendererData = new RendererData(injectDatas.Length);
-            }
-            var handle = new UpdateDataJob { matrices = matrices, yPositions = yPositions, units = injectDatas.stateDatas }.Schedule(injectDatas.Length, 64);
-            handle.Complete();
-            matrices.CopyTo(rendererData.matrices);
-            yPositions.CopyTo(rendererData.yPositions);
         }
     }
 }

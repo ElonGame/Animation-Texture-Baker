@@ -5,27 +5,12 @@ namespace AnimationBaker.StateMachine.XNode
     [System.Serializable]
     public class TransitionRule : ScriptableObject
     {
-        NodeGraphVariable _variable;
-        public NodeGraphVariable Variable
-        {
-            get
-            {
-                if (_variable == null)
-                {
-                    _variable = graph.GetVariable(VariableName);
-                }
-                return _variable;
-            }
-            set
-            {
-                _variable = value;
-            }
-        }
+        // NodeGraphVariable _variable;
 
         [HideInInspector]
         public StateGraph graph;
-        [HideInInspector]
-        public string VariableName = "";
+        public NodeGraphVariable Variable;
+        // public string VariableName = "";
         public Qualifier Qualifier;
         public bool QualifierBoolVal;
         public TrueFalse QualifierBoolEnum
